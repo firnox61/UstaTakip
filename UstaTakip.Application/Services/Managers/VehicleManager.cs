@@ -1,0 +1,71 @@
+﻿using AutoMapper;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using UstaTakip.Application.DTOs.Vehicles;
+using UstaTakip.Application.Interfaces.Services.Contracts;
+using UstaTakip.Application.Repositories;
+using UstaTakip.Core.Utilities.Results;
+using UstaTakip.Domain.Entities;
+
+namespace UstaTakip.Application.Services.Managers
+{
+    public class VehicleManager : IVehicleService
+    {
+        private readonly IVehicleDal _vehicleDal;
+        private readonly IMapper _mapper;
+
+        public VehicleManager(IVehicleDal vehicleDal, IMapper mapper)
+        {
+            _vehicleDal = vehicleDal;
+            _mapper = mapper;
+        }
+
+        public async Task<IResult> AddAsync(VehicleCreateDto dto)
+        {
+            var vehicle = _mapper.Map<Vehicle>(dto);
+            await _vehicleDal.AddAsync(vehicle);
+            return new SuccessResult("Araç başarıyla eklendi.");
+        }
+
+        public async Task<IResult> DeleteAsync(Guid id)
+        {
+            await _vehicleDal.DeleteAsync(new Vehicle { Id = id });
+            return new SuccessResult("Araç silindi.");
+        }
+
+        public async Task<IDataResult<List<VehicleListDto>>> GetAllAsync()
+        {
+            var vehicles = await _vehicleDal.GetAllAsync();
+            var dto = _mapper.Map<List<VehicleListDto>>(vehicles);
+            return new SuccessDataResult<List<VehicleListDto>>(dto);
+        }
+
+        public async Task<IDataResult<VehicleListDto>> GetByIdAsync(Guid id)
+        {
+            var vehicle = await _vehicleDal.GetAsync(x => x.Id == id);
+            if (vehicle == null)
+                return new ErrorDataResult<VehicleListDto>("Araç bulunamadı.");
+
+            var dto = _mapper.Map<VehicleListDto>(vehicle);
+            return new SuccessDataResult<VehicleListDto>(dto);
+        }
+
+        public async Task<IDataResult<List<VehicleListDto>>> GetByCustomerIdAsync(Guid customerId)
+        {
+            var vehicles = await _vehicleDal.GetAllAsync(x => x.CustomerId == customerId);
+            var dto = _mapper.Map<List<VehicleListDto>>(vehicles);
+            return new SuccessDataResult<List<VehicleListDto>>(dto);
+        }
+
+        public async Task<IResult> UpdateAsync(VehicleUpdateDto dto)
+        {
+            var vehicle = _mapper.Map<Vehicle>(dto);
+            await _vehicleDal.UpdateAsync(vehicle);
+            return new SuccessResult("Araç güncellendi.");
+        }
+    }
+
+}
