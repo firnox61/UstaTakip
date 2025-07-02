@@ -1,4 +1,4 @@
-﻿using UstaTakip.Application.Interfaces.Security;
+﻿using UstaTakip.Core.Security;
 
 namespace UstaTakip.Infrastructure.Security.Hashing
 {

@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using UstaTakip.Application.DTOs.Users;
-using UstaTakip.Application.Interfaces.Security;
 using UstaTakip.Application.Interfaces.Services.Contracts;
 using UstaTakip.Application.Repositories;
+using UstaTakip.Core.Aspects.Caching;
+using UstaTakip.Core.Aspects.Transaction;
+using UstaTakip.Core.Security;
 using UstaTakip.Core.Utilities.Results;
 using UstaTakip.Domain.Entities;
 using UstaTakip.Domain.Security;
@@ -26,14 +28,14 @@ namespace UstaTakip.Application.Services.Managers
             _userDal = userDal;
             _hashingService = hashingService;
         }
-
+      
         public async Task<IDataResult<AccessToken>> CreateAccessTokenAsync(User user)
         {
             var claims = await _userService.GetClaimsAsync(user);
             var accessToken = _tokenHelper.CreateToken(user, claims.Data);
             return new SuccessDataResult<AccessToken>(accessToken);
         }
-
+        [TransactionScopeAspect]
         public async Task<IDataResult<User>> LoginAsync(UserForLoginDto loginDto)
         {
             var userResult = await _userService.GetByEmailAsync(loginDto.Email);
@@ -53,7 +55,8 @@ namespace UstaTakip.Application.Services.Managers
 
             return new SuccessDataResult<User>(user, "Giriş başarılı");
         }
-
+        [TransactionScopeAspect]
+        [CacheRemoveAspect("IUserService.Get*")]
         public async Task<IDataResult<User>> RegisterAsync(UserForRegisterDto registerDto, string password)
         {
             byte[] passwordHash, passwordSalt;

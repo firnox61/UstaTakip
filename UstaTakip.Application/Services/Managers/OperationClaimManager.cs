@@ -3,6 +3,8 @@ using UstaTakip.Application.DTOs.Users;
 using UstaTakip.Application.Interfaces.Services.Contracts;
 using UstaTakip.Application.Repositories;
 using UstaTakip.Application.Validators.Users;
+using UstaTakip.Core.Aspects.Caching;
+using UstaTakip.Core.Aspects.Transaction;
 using UstaTakip.Core.Aspects.Validation;
 using UstaTakip.Core.Utilities.Results;
 using UstaTakip.Domain.Entities;
@@ -20,14 +22,14 @@ namespace UstaTakip.Application.Services.Managers
             _operationClaimDal = operationClaimDal;
             _mapper = mapper;
         }
-
+        [CacheAspect]
         public async Task<IDataResult<List<OperationClaimListDto>>> GetAllAsync()
         {
             var entities = await _operationClaimDal.GetAllAsync();
             var dtoList = _mapper.Map<List<OperationClaimListDto>>(entities);
             return new SuccessDataResult<List<OperationClaimListDto>>(dtoList);
         }
-
+        [CacheAspect]
         public async Task<IDataResult<OperationClaimListDto>> GetByIdAsync(int id)
         {
             var entity = await _operationClaimDal.GetAsync(o => o.Id == id);
@@ -37,14 +39,18 @@ namespace UstaTakip.Application.Services.Managers
             var dto = _mapper.Map<OperationClaimListDto>(entity);
             return new SuccessDataResult<OperationClaimListDto>(dto);
         }
-       // [ValidationAspect(typeof(OperationClaimCreateDtoValidator))]
+        [TransactionScopeAspect]
+        [ValidationAspect(typeof(OperationClaimCreateDtoValidator))]
+        [CacheRemoveAspect("IOperationClaimService.Get*")]
         public async Task<IResult> AddAsync(OperationClaimCreateDto dto)
         {
             var entity = _mapper.Map<OperationClaim>(dto);
             await _operationClaimDal.AddAsync(entity);
             return new SuccessResult("Rol eklendi");
         }
+        [TransactionScopeAspect]
         [ValidationAspect(typeof(OperationClaimUpdateDtoValidator))]
+        [CacheRemoveAspect("IOperationClaimService.Get*")]
         public async Task<IResult> UpdateAsync(OperationClaimUpdateDto dto)
         {
             var entity = await _operationClaimDal.GetAsync(x => x.Id == dto.Id);
@@ -55,7 +61,8 @@ namespace UstaTakip.Application.Services.Managers
             await _operationClaimDal.UpdateAsync(entity);
             return new SuccessResult("Rol güncellendi");
         }
-
+        [TransactionScopeAspect]
+        [CacheRemoveAspect("IOperationClaimService.Get*")]
         public async Task<IResult> DeleteAsync(int id)
         {
             var entity = await _operationClaimDal.GetAsync(x => x.Id == id);

@@ -9,9 +9,9 @@ using UstaTakip.Infrastructure.Persistence.Context;
 
 namespace UstaTakip.Infrastructure.Persistence.Repositories.EntityFramework
 {
-    public class EfRepairJob : EfEntityRepositoryBase<RepairJob, DataContext>, IRepairJobDal
+    public class EfRepairJobDal : EfEntityRepositoryBase<RepairJob, DataContext>, IRepairJobDal
     {
-        public EfRepairJob(DataContext context) : base(context)
+        public EfRepairJobDal(DataContext context) : base(context)
         {
         }
     }

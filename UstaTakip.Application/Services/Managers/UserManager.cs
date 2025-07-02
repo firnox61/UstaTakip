@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using UstaTakip.Application.DTOs.Users;
-using UstaTakip.Application.Interfaces.Security;
 using UstaTakip.Application.Interfaces.Services.Contracts;
 using UstaTakip.Application.Repositories;
 using UstaTakip.Application.Validators.Users;
+using UstaTakip.Core.Aspects.Caching;
+using UstaTakip.Core.Aspects.Transaction;
 using UstaTakip.Core.Aspects.Validation;
+using UstaTakip.Core.Security;
 using UstaTakip.Core.Utilities.Results;
 using UstaTakip.Domain.Entities;
 
@@ -23,7 +25,8 @@ namespace UstaTakip.Application.Services.Managers
             _mapper = mapper;
             _hashingService = hashingService;
         }
-        //[ValidationAspect(typeof(UserDtoValidator))]
+        [ValidationAspect(typeof(UserDtoValidator))]
+        [TransactionScopeAspect]
         public async Task<IResult> EditProfil(UserDto userDto, string password)
         {
             byte[] passwordHash, passwordSalt;
@@ -36,14 +39,15 @@ namespace UstaTakip.Application.Services.Managers
             await _userDal.UpdateAsync(user);
             return new SuccessResult("Müşteri bilgileri güncellendi");
         }
-       // [ValidationAspect(typeof(UserCreateDtoValidator))]
+        [ValidationAspect(typeof(UserCreateDtoValidator))]
+        [TransactionScopeAspect]
         public async Task<IResult> AddAsync(UserCreateDto dto)
         {
             var user = _mapper.Map<User>(dto);
             await _userDal.AddAsync(user);
             return new SuccessResult();
         }
-
+        [TransactionScopeAspect]
         public async Task<IResult> DeleteAsync(int id)
         {
             var user = await _userDal.GetAsync(u => u.Id == id);
@@ -53,14 +57,14 @@ namespace UstaTakip.Application.Services.Managers
             await _userDal.DeleteAsync(user);
             return new SuccessResult("Kullanıcı silindi.");
         }
-
+        [CacheAspect]
         public async Task<IDataResult<List<UserListDto>>> GetAllAsync()
         {
             var users = await _userDal.GetAllAsync();
             var dtoList = _mapper.Map<List<UserListDto>>(users);
             return new SuccessDataResult<List<UserListDto>>(dtoList);
         }
-
+        [CacheAspect]
         public async Task<IDataResult<User>> GetByEmailAsync(string email)
         {
             var user = await _userDal.GetAsync(u => u.Email == email);
@@ -69,7 +73,7 @@ namespace UstaTakip.Application.Services.Managers
 
             return new SuccessDataResult<User>(user);
         }
-
+        [CacheAspect]
         public async Task<IDataResult<UserListDto>> GetByIdAsync(int id)
         {
             var user = await _userDal.GetAsync(u => u.Id == id);
@@ -79,7 +83,7 @@ namespace UstaTakip.Application.Services.Managers
             var dto = _mapper.Map<UserListDto>(user);
             return new SuccessDataResult<UserListDto>(dto);
         }
-
+        [CacheAspect]
         public async Task<IDataResult<List<OperationClaim>>> GetClaimsAsync(User user)
         {
             var claims = await _userDal.GetClaimsAsync(user); // DAL'de bu olmalı

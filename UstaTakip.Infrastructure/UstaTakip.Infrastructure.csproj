@@ -22,4 +22,8 @@
     <ProjectReference Include="..\UstaTakip.Domain\UstaTakip.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Aspects\Interceptors\" />
+  </ItemGroup>
+
 </Project>

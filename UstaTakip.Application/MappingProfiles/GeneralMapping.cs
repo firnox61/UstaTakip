@@ -2,6 +2,7 @@
 using UstaTakip.Application.DTOs.Customers;
 using UstaTakip.Application.DTOs.RepairJobs;
 using UstaTakip.Application.DTOs.Users;
+using UstaTakip.Application.DTOs.VehicleImages;
 using UstaTakip.Application.DTOs.Vehicles;
 using UstaTakip.Domain.Entities;
 
@@ -44,12 +45,19 @@ namespace UstaTakip.Application.MappingProfiles
             // Vehicle
             CreateMap<Vehicle, VehicleCreateDto>().ReverseMap();
             CreateMap<Vehicle, VehicleUpdateDto>().ReverseMap();
-            CreateMap<Vehicle, VehicleListDto>().ReverseMap();
+            CreateMap<Vehicle, VehicleListDto>()
+     .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.Customer.FullName))
+     .ForMember(dest => dest.Images, opt => opt.MapFrom(src => src.VehicleImages));
+
+
 
             // RepairJob
             CreateMap<RepairJob, RepairJobCreateDto>().ReverseMap();
             CreateMap<RepairJob, RepairJobUpdateDto>().ReverseMap();
             CreateMap<RepairJob, RepairJobListDto>().ReverseMap();
+
+            CreateMap<VehicleImage, VehicleImageListDto>().ReverseMap();
+            CreateMap<VehicleImage, VehicleImageCreateDto>().ReverseMap(); 
 
 
 

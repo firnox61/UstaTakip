@@ -15,6 +15,8 @@ namespace UstaTakip.Application.Interfaces.Services.Contracts
         Task<IResult> AddAsync(VehicleCreateDto dto);
         Task<IResult> UpdateAsync(VehicleUpdateDto dto);
         Task<IResult> DeleteAsync(Guid id);
+        Task<IDataResult<List<VehicleListDto>>> GetListAsync(); // ✅ Bunu ekleyin
+
         Task<IDataResult<List<VehicleListDto>>> GetByCustomerIdAsync(Guid customerId);
     }
 

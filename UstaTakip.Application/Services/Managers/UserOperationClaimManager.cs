@@ -1,10 +1,13 @@
 ﻿using AutoMapper;
-
-using UstaTakip.Application.Interfaces.Services.Contracts;
-using UstaTakip.Core.Utilities.Results;
 using UstaTakip.Application.DTOs.Users;
-using UstaTakip.Domain.Entities;
+using UstaTakip.Application.Interfaces.Services.Contracts;
 using UstaTakip.Application.Repositories;
+using UstaTakip.Application.Validators.Users;
+using UstaTakip.Core.Aspects.Caching;
+using UstaTakip.Core.Aspects.Transaction;
+using UstaTakip.Core.Aspects.Validation;
+using UstaTakip.Core.Utilities.Results;
+using UstaTakip.Domain.Entities;
 
 namespace UstaTakip.Application.Services.Managers
 {
@@ -19,14 +22,17 @@ namespace UstaTakip.Application.Services.Managers
             _mapper = mapper;
         }
 
-        //[ValidationAspect(typeof(UserOperationClaimCreateDtoValidator))]
+        [ValidationAspect(typeof(UserOperationClaimCreateDtoValidator))]
+        [TransactionScopeAspect]
+        [CacheRemoveAspect("IUserOperationClaimService.Get*")]
         public async Task<IResult> AddAsync(UserOperationClaimCreateDto dto)
         {
             var entity = _mapper.Map<UserOperationClaim>(dto);
             await _userOperationClaimDal.AddAsync(entity);
             return new SuccessResult("Kullanıcıya rol atandı.");
         }
-
+        [TransactionScopeAspect]
+        [CacheRemoveAspect("IUserOperationClaimService.Get*")]
         public async Task<IResult> DeleteAsync(int id)
         {
             var entity = await _userOperationClaimDal.GetAsync(x => x.Id == id);
@@ -36,7 +42,7 @@ namespace UstaTakip.Application.Services.Managers
             await _userOperationClaimDal.DeleteAsync(entity);
             return new SuccessResult("Rol ataması silindi.");
         }
-
+        [CacheAspect]
         public async Task<IDataResult<List<UserOperationClaimListDto>>> GetByUserIdAsync(int userId)
         {
             var list = await _userOperationClaimDal.GetWithDetailsByUserIdAsync(userId);

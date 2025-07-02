@@ -1,10 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36212.18 d17.14
+VisualStudioVersion = 17.14.36212.18
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UstaTakip.Web", "UstaTakip.Web\UstaTakip.Web.csproj", "{2872BEDB-987B-4842-9827-1D9C4B12181D}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UstaTakip.Domain", "UstaTakip.Domain\UstaTakip.Domain.csproj", "{BADBACBB-40AB-46E8-8B62-7A2DF055EA30}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UstaTakip.Application", "UstaTakip.Application\UstaTakip.Application.csproj", "{9F32CC4F-D763-4CBE-8498-C870017E52A8}"
@@ -13,16 +11,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UstaTakip.Infrastructure", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UstaTakip.Core", "UstaTakip.Core\UstaTakip.Core.csproj", "{2273C013-A962-420F-8B37-039ECAAAC39E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UstaTakip.WebAPI", "UstaTakip.WebAPI\UstaTakip.WebAPI.csproj", "{F7C3527C-F4D9-4174-BB10-D922DD94D040}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UstaTakip.Web", "UstaTakip.Web\UstaTakip.Web.csproj", "{E576DD7F-EC96-4C14-9463-A5586101D680}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{2872BEDB-987B-4842-9827-1D9C4B12181D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2872BEDB-987B-4842-9827-1D9C4B12181D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2872BEDB-987B-4842-9827-1D9C4B12181D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2872BEDB-987B-4842-9827-1D9C4B12181D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BADBACBB-40AB-46E8-8B62-7A2DF055EA30}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{BADBACBB-40AB-46E8-8B62-7A2DF055EA30}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BADBACBB-40AB-46E8-8B62-7A2DF055EA30}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -39,6 +37,14 @@ Global
 		{2273C013-A962-420F-8B37-039ECAAAC39E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2273C013-A962-420F-8B37-039ECAAAC39E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2273C013-A962-420F-8B37-039ECAAAC39E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7C3527C-F4D9-4174-BB10-D922DD94D040}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7C3527C-F4D9-4174-BB10-D922DD94D040}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7C3527C-F4D9-4174-BB10-D922DD94D040}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7C3527C-F4D9-4174-BB10-D922DD94D040}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E576DD7F-EC96-4C14-9463-A5586101D680}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E576DD7F-EC96-4C14-9463-A5586101D680}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E576DD7F-EC96-4C14-9463-A5586101D680}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E576DD7F-EC96-4C14-9463-A5586101D680}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

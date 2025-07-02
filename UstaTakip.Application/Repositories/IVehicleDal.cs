@@ -9,5 +9,9 @@ namespace UstaTakip.Application.Repositories
 {
     public interface IVehicleDal:IEntityRepository<Vehicle>
     {
+        Task<List<Vehicle>> GetAllWithDetailsAsync();
+        Task<Vehicle?> GetByIdWithDetailsAsync(Guid id); // ✅ Yeni eklenen
+        Task<List<Vehicle>> GetByCustomerIdWithDetailsAsync(Guid customerId);
+
     }
 }

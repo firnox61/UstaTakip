@@ -1,0 +1,62 @@
+﻿@page "/vehicles"
+@using UstaTakip.Web.Models.Vehicles
+@using UstaTakip.Web.Services.Vehicles
+@inject IVehicleApiService VehicleService
+
+<h3>Araç Listesi</h3>
+
+@if (vehicles == null)
+{
+    <p>Yükleniyor...</p>
+}
+else if (!vehicles.Any())
+{
+    <p>Kayıtlı araç bulunamadı.</p>
+}
+else
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Görsel</th>
+                <th>Plaka</th>
+                <th>Marka</th>
+                <th>Model</th>
+                <th>Yıl</th>
+                <th>Müşteri</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var v in vehicles)
+            {
+                <tr>
+                    <td>
+                        @if (v.Images.Any())
+                        {
+                            <img src="@v.Images.First().ImagePath" width="80" />
+
+                        }
+                        else
+                        {
+                            <em>Yok</em>
+                        }
+                    </td>
+                    <td>@v.Plate</td>
+                    <td>@v.Brand</td>
+                    <td>@v.Model</td>
+                    <td>@v.Year</td>
+                    <td>@v.CustomerName</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<VehicleListDto>? vehicles;
+
+    protected override async Task OnInitializedAsync()
+    {
+        vehicles = await VehicleService.GetAllAsync();
+    }
+}

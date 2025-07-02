@@ -7,6 +7,11 @@ using System.Threading.Tasks;
 using UstaTakip.Application.DTOs.Customers;
 using UstaTakip.Application.Interfaces.Services.Contracts;
 using UstaTakip.Application.Repositories;
+using UstaTakip.Application.Validators.Customers;
+using UstaTakip.Application.Validators.Vehicles;
+using UstaTakip.Core.Aspects.Caching;
+using UstaTakip.Core.Aspects.Transaction;
+using UstaTakip.Core.Aspects.Validation;
 using UstaTakip.Core.Utilities.Results;
 using UstaTakip.Domain.Entities;
 
@@ -23,6 +28,9 @@ namespace UstaTakip.Application.Services.Managers
             _mapper = mapper;
         }
 
+        [ValidationAspect(typeof(CustomerCreateDtoValidator))]
+        [TransactionScopeAspect]
+        [CacheRemoveAspect("ICustomerService.Get*")]
         public async Task<IResult> AddAsync(CustomerCreateDto dto)
         {
             var customer = _mapper.Map<Customer>(dto);
@@ -30,12 +38,15 @@ namespace UstaTakip.Application.Services.Managers
             return new SuccessResult("Müşteri başarıyla eklendi.");
         }
 
+        [TransactionScopeAspect]
+        [CacheRemoveAspect("ICustomerService.Get*")]
         public async Task<IResult> DeleteAsync(Guid id)
         {
             await _customerDal.DeleteAsync(new Customer { Id = id });
             return new SuccessResult("Müşteri silindi.");
         }
 
+        [CacheAspect]
         public async Task<IDataResult<List<CustomerListDto>>> GetAllAsync()
         {
             var customers = await _customerDal.GetAllAsync();
@@ -43,6 +54,7 @@ namespace UstaTakip.Application.Services.Managers
             return new SuccessDataResult<List<CustomerListDto>>(dto);
         }
 
+        [CacheAspect]
         public async Task<IDataResult<CustomerListDto>> GetByIdAsync(Guid id)
         {
             var customer = await _customerDal.GetAsync(x => x.Id == id);
@@ -53,6 +65,8 @@ namespace UstaTakip.Application.Services.Managers
             return new SuccessDataResult<CustomerListDto>(dto);
         }
 
+        [TransactionScopeAspect]
+        [CacheRemoveAspect("ICustomerService.Get*")]
         public async Task<IResult> UpdateAsync(CustomerUpdateDto dto)
         {
             var customer = _mapper.Map<Customer>(dto);
@@ -60,5 +74,6 @@ namespace UstaTakip.Application.Services.Managers
             return new SuccessResult("Müşteri güncellendi.");
         }
     }
+
 
 }
