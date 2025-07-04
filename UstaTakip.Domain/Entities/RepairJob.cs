@@ -15,6 +15,8 @@ namespace UstaTakip.Domain.Entities
         public DateTime Date { get; set; }
         public Guid VehicleId { get; set; }
         public Vehicle Vehicle { get; set; }
+        public InsurancePayment InsurancePayment { get; set; }
+
     }
 
 }

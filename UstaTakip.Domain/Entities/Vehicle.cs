@@ -18,6 +18,8 @@ namespace UstaTakip.Domain.Entities
         public Customer Customer { get; set; }
         public ICollection<RepairJob> RepairJobs { get; set; } = new List<RepairJob>();
         public ICollection<VehicleImage> VehicleImages { get; set; } = new List<VehicleImage>(); // ✅ Yeni ilişki
+        public ICollection<InsurancePolicy> InsurancePolicies { get; set; } = new List<InsurancePolicy>();
+
     }
 
 }

@@ -23,6 +23,9 @@ namespace UstaTakip.Infrastructure.Persistence.Context
         public DbSet<Vehicle> Vehicles => Set<Vehicle>();
         public DbSet<VehicleImage> VehicleImages => Set<VehicleImage>();
         public DbSet<RepairJob> RepairJobs => Set<RepairJob>();
+
+        public DbSet<InsurancePolicy> InsurancePolicies => Set<InsurancePolicy>();
+        public DbSet<InsurancePayment> InsurancePayments=> Set<InsurancePayment>();
         public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
         // public DbSet<AuditLog> AuditLogs =>Set<AuditLog>();
 
@@ -74,7 +77,31 @@ namespace UstaTakip.Infrastructure.Persistence.Context
                  .Property(r => r.Price)
                  .HasPrecision(18, 2); // 18 basamak, 2 ondalık
 
+            // Vehicle - InsurancePolicy (1:N)
+            modelBuilder.Entity<InsurancePolicy>()
+                .HasOne(p => p.Vehicle)
+                .WithMany(v => v.InsurancePolicies)
+                .HasForeignKey(p => p.VehicleId)
+                .OnDelete(DeleteBehavior.Cascade); // Bir araç silinirse poliçeleri de silinir
 
+            // InsurancePolicy - InsurancePayment (1:N)
+            modelBuilder.Entity<InsurancePayment>()
+                .HasOne(ip => ip.InsurancePolicy)
+                .WithMany(p => p.InsurancePayments)
+                .HasForeignKey(ip => ip.InsurancePolicyId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // RepairJob - InsurancePayment (1:1)
+            modelBuilder.Entity<InsurancePayment>()
+                .HasOne(ip => ip.RepairJob)
+                .WithOne(rj => rj.InsurancePayment)
+                .HasForeignKey<InsurancePayment>(ip => ip.RepairJobId)
+                .OnDelete(DeleteBehavior.Restrict); // İsteğe bağlı: onarım silinirse ödeme kalabilir
+
+            // Opsiyonel: RepairJob içinde Navigation Property varsa
+            // public InsurancePayment InsurancePayment { get; set; }
+
+            // Diğer yapıların fluent configleri varsa onlar da burada olmalı
             // Tablo adları
             modelBuilder.Entity<Customer>().ToTable("Customers");
             modelBuilder.Entity<Vehicle>().ToTable("Vehicles");

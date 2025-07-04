@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using UstaTakip.Application.DTOs.Customers;
+using UstaTakip.Application.DTOs.InsurancePayments;
+using UstaTakip.Application.DTOs.InsurancePolicys;
 using UstaTakip.Application.DTOs.RepairJobs;
 using UstaTakip.Application.DTOs.Users;
 using UstaTakip.Application.DTOs.VehicleImages;
@@ -57,9 +59,17 @@ namespace UstaTakip.Application.MappingProfiles
             CreateMap<RepairJob, RepairJobListDto>().ReverseMap();
 
             CreateMap<VehicleImage, VehicleImageListDto>().ReverseMap();
-            CreateMap<VehicleImage, VehicleImageCreateDto>().ReverseMap(); 
+            CreateMap<VehicleImage, VehicleImageCreateDto>().ReverseMap();
 
+            // InsurancePolicy Mappings
+            CreateMap<InsurancePolicy, InsurancePolicyCreateDto>().ReverseMap();
+            CreateMap<InsurancePolicy, InsurancePolicyUpdateDto>().ReverseMap();
+            CreateMap<InsurancePolicy, InsurancePolicyListDto>().ReverseMap();
 
+            // InsurancePayment Mappings
+            CreateMap<InsurancePayment, InsurancePaymentCreateDto>().ReverseMap();
+            CreateMap<InsurancePayment, InsurancePaymentUpdateDto>().ReverseMap();
+            CreateMap<InsurancePayment, InsurancePaymentListDto>().ReverseMap();
 
         }
     }
