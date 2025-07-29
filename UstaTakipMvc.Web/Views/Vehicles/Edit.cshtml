@@ -1,0 +1,40 @@
+﻿@model UstaTakipMvc.Web.Models.Vehicles.VehicleUpdateDto
+
+@{
+    ViewData["Title"] = "Araç Güncelle";
+}
+
+<h2>Araç Güncelle</h2>
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger">@ViewBag.Error</div>
+}
+
+<form method="post">
+    <input type="hidden" asp-for="Id" />
+
+    <div class="mb-3">
+        <label class="form-label">Plaka</label>
+        <input type="text" class="form-control" asp-for="Plate" required />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Marka</label>
+        <input type="text" class="form-control" asp-for="Brand" required />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Model</label>
+        <input type="text" class="form-control" asp-for="Model" required />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Yıl</label>
+        <input type="number" class="form-control" asp-for="Year" required />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Müşteri ID</label>
+        <input type="text" class="form-control" asp-for="CustomerId" required />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Güncelle</button>
+    <a asp-action="Index" class="btn btn-secondary">İptal</a>
+</form>

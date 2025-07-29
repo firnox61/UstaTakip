@@ -1,5 +1,6 @@
 using UstaTakip.Web;
 using UstaTakip.Web.Components;
+using UstaTakip.Web.Services.Auth;
 using UstaTakip.Web.Services.Vehicles;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddScoped<IVehicleApiService, VehicleApiService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddHttpClient(); // HttpClient kullanýlacaksa
 
 var app = builder.Build();

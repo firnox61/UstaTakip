@@ -2,6 +2,7 @@
 using Autofac.Extras.DynamicProxy;
 using Castle.DynamicProxy;
 using Microsoft.Extensions.DependencyInjection;
+using UstaTakip.Application.Interfaces.Services.Contracts;
 using UstaTakip.Application.Repositories;
 using UstaTakip.Application.Services.Managers;
 using UstaTakip.Core.Aspects.Interceptors;
@@ -21,9 +22,9 @@ namespace UstaTakip.WebAPI.DependencyInjection
         protected override void Load(ContainerBuilder builder)
         {
            
-          //  builder.RegisterType<AuthManager>().As<IAuthService>();
+            builder.RegisterType<AuthManager>().As<IAuthService>();
           //  builder.RegisterType<EfUserDal>().As<IUserDal>();
-         //   builder.RegisterType<UserManager>().As<IUserService>();
+            builder.RegisterType<UserManager>().As<IUserService>();
             builder.RegisterType<EfUserDal>().As<IUserDal>();
 
          //    builder.RegisterType<UserOperationClaimManager>().As<IUserOperationClaimService>();

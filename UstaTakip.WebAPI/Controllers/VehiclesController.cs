@@ -56,18 +56,45 @@ namespace UstaTakip.WebAPI.Controllers
         public async Task<IActionResult> Add([FromBody] VehicleCreateDto dto)
         {
             var result = await _vehicleService.AddAsync(dto);
+
             if (result.Success)
-                return Ok(result);
-            return BadRequest(result);
+            {
+                return Ok(new
+                {
+                    success = true,
+                    message = result.Message,
+                    data = result.Data
+                });
+            }
+
+            return BadRequest(new
+            {
+                success = false,
+                message = result.Message
+            });
         }
 
         [HttpPut]
         public async Task<IActionResult> Update([FromBody] VehicleUpdateDto dto)
         {
             var result = await _vehicleService.UpdateAsync(dto);
+
             if (result.Success)
-                return Ok(result);
-            return BadRequest(result);
+            {
+                // Explicit JSON objesi dön
+                return Ok(new
+                {
+                    success = true,
+                    message = result.Message,
+                    data = result.Data // Eğer null değilse
+                });
+            }
+
+            return BadRequest(new
+            {
+                success = false,
+                message = result.Message
+            });
         }
 
         [HttpDelete("{id}")]

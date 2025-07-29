@@ -1,0 +1,25 @@
+﻿@model UstaTakipMvc.Web.Models.VehicleImages.VehicleImageCreateDto
+
+@{
+    ViewData["Title"] = "Araç Resmi Yükle";
+    Layout = "~/Views/Shared/_Layout.cshtml"; // varsa
+}
+
+<h2>Araç Resmi Yükle</h2>
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger">@ViewBag.Error</div>
+}
+
+<form method="post" enctype="multipart/form-data">
+    <input type="hidden" asp-for="VehicleId" value="@ViewBag.VehicleId" />
+
+    <div class="mb-3">
+        <label>Resim Dosyası</label>
+        <input asp-for="ImageFile" type="file" class="form-control" accept="image/*" required />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Yükle</button>
+    <a asp-action="Index" asp-controller="Vehicles" class="btn btn-secondary">İptal</a>
+</form>

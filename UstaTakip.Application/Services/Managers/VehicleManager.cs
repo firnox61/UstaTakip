@@ -30,12 +30,15 @@ namespace UstaTakip.Application.Services.Managers
         [TransactionScopeAspect]
         [ValidationAspect(typeof(VehicleCreateDtoValidator))]
         [CacheRemoveAspect("IVehicleService.Get*")]
-        public async Task<IResult> AddAsync(VehicleCreateDto dto)
+        public async Task<IDataResult<VehicleCreateDto>> AddAsync(VehicleCreateDto dto)
         {
             var vehicle = _mapper.Map<Vehicle>(dto);
             await _vehicleDal.AddAsync(vehicle);
-            return new SuccessResult("Araç başarıyla eklendi.");
+
+            // Geriye ID'yi veya dto'yu dönebilirsin. Dilersen veritabanından tekrar da çekebilirsin.
+            return new DataResult<VehicleCreateDto>(dto, true, "Araç başarıyla eklendi.");
         }
+
 
         [TransactionScopeAspect]
         [CacheRemoveAspect("IVehicleService.Get*")]
@@ -75,12 +78,14 @@ namespace UstaTakip.Application.Services.Managers
         [TransactionScopeAspect]
         [ValidationAspect(typeof(VehicleUpdateDtoValidator))]
         [CacheRemoveAspect("IVehicleService.Get*")]
-        public async Task<IResult> UpdateAsync(VehicleUpdateDto dto)
+        public async Task<IDataResult<VehicleUpdateDto>> UpdateAsync(VehicleUpdateDto dto)
         {
             var vehicle = _mapper.Map<Vehicle>(dto);
             await _vehicleDal.UpdateAsync(vehicle);
-            return new SuccessResult("Araç güncellendi.");
+
+            return new DataResult<VehicleUpdateDto>(dto, true, "Araç başarıyla güncellendi.");
         }
+
 
         [CacheAspect]
         public async Task<IDataResult<List<VehicleListDto>>> GetListAsync()

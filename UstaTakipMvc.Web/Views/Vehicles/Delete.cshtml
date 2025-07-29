@@ -1,0 +1,17 @@
+﻿@foreach (var item in Model)
+{
+    <tr>
+        <td>@item.Plate</td>
+        <td>@item.Brand</td>
+        <td>@item.Model</td>
+        <td>@item.Year</td>
+        <td>
+            <a href="@Url.Action("Edit", "Vehicles", new { id = item.Id })" class="btn btn-warning btn-sm">Güncelle</a>
+
+            <form asp-action="Delete" method="post" style="display:inline;" onsubmit="return confirm('Silmek istediğinizden emin misiniz?');">
+                <input type="hidden" name="id" value="@item.Id" />
+                <button type="submit" class="btn btn-danger btn-sm">Sil</button>
+            </form>
+        </td>
+    </tr>
+}

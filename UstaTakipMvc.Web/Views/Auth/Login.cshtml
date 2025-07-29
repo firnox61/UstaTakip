@@ -1,0 +1,23 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@model UstaTakipMvc.Web.Models.Users.UserForLoginDto
+@{
+    ViewData["Title"] = "Giriş Yap";
+}
+
+<h2>Giriş Yap</h2>
+
+<form method="post">
+    <div class="mb-3">
+        <label class="form-label">E-posta</label>
+        <input asp-for="Email" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Şifre</label>
+        <input asp-for="Password" type="password" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-success">Giriş Yap</button>
+</form>

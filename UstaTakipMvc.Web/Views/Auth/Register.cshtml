@@ -1,0 +1,27 @@
+﻿@model UstaTakipMvc.Web.Models.Users.UserForRegisterDto
+@{
+    ViewData["Title"] = "Kayıt Ol";
+}
+
+<h2>Kayıt Ol</h2>
+
+<form asp-action="Register" method="post">
+
+    <div class="mb-3">
+        <label class="form-label">Ad</label>
+        <input asp-for="FirstName" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Soyad</label>
+        <input asp-for="LastName" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">E-posta</label>
+        <input asp-for="Email" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Şifre</label>
+        <input asp-for="Password" type="password" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-primary">Kayıt Ol</button>
+</form>

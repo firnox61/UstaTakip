@@ -122,3 +122,4 @@ namespace UstaTakip.Infrastructure.Persistence.Context
 //Add-Migration InitialCreate
 
 //update-database "InitialCreate"
+//tree /f /a > project-structure.txt

@@ -1,9 +1,13 @@
-﻿using UstaTakip.Core.Abstractions;
+﻿using System.ComponentModel.DataAnnotations;
+using UstaTakip.Core.Abstractions;
 namespace UstaTakip.Web.Models.Users
 {
     public class UserForLoginDto 
     {
-        public string Email { get; set; }
-        public string Password { get; set; }
+        [Required(ErrorMessage = "Email zorunludur")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Şifre zorunludur")]
+        public string Password { get; set; } = string.Empty;
     }
 }

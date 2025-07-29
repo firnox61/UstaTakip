@@ -1,0 +1,45 @@
+﻿@model UstaTakipMvc.Web.Models.Vehicles.VehicleCreateDto
+
+@{
+    ViewData["Title"] = "Yeni Araç Ekle";
+    var customers = ViewBag.Customers as List<SelectListItem> ?? new List<SelectListItem>();
+}
+
+<h2>Yeni Araç Ekle</h2>
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger">@ViewBag.Error</div>
+}
+
+<form method="post">
+    <div class="mb-3">
+        <label>Plaka</label>
+        <input asp-for="Plate" class="form-control" required />
+    </div>
+    <div class="mb-3">
+        <label>Marka</label>
+        <input asp-for="Brand" class="form-control" required />
+    </div>
+    <div class="mb-3">
+        <label>Model</label>
+        <input asp-for="Model" class="form-control" required />
+    </div>
+    <div class="mb-3">
+        <label>Yıl</label>
+        <input asp-for="Year" type="number" class="form-control" required />
+    </div>
+    <div class="mb-3">
+        <label>Müşteri</label>
+        <select asp-for="CustomerId" class="form-select" required>
+            <option value="">Müşteri Seçin</option>
+            @foreach (var item in customers)
+            {
+                <option value="@item.Value">@item.Text</option>
+            }
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Kaydet</button>
+    <a asp-action="Index" class="btn btn-secondary">İptal</a>
+</form>
