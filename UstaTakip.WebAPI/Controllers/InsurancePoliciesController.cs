@@ -69,5 +69,24 @@ namespace UstaTakip.WebAPI.Controllers
                 return Ok(result);
             return BadRequest(result);
         }
+        [HttpGet("expiring")]
+        public async Task<IActionResult> GetExpiring([FromQuery] int days = 30, [FromQuery] int take = 5)
+        {
+            var result = await _insurancePolicyService.GetExpiringAsync(days, take);
+            if (result.Success)
+                return Ok(result);
+            return BadRequest(result);
+        }
+
+        // GET /api/InsurancePolicies/active/count
+        [HttpGet("active/count")]
+        public async Task<IActionResult> GetActiveCount()
+        {
+            var result = await _insurancePolicyService.GetActiveCountAsync();
+            if (result.Success)
+                return Ok(result);
+            return BadRequest(result);
+        }
+
     }
 }

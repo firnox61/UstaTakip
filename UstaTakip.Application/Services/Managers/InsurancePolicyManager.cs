@@ -8,6 +8,7 @@ using UstaTakip.Application.DTOs.InsurancePolicys;
 using UstaTakip.Application.Interfaces.Services.Contracts;
 using UstaTakip.Application.Repositories;
 using UstaTakip.Application.Validators.InsurancePolicys;
+using UstaTakip.Core.Aspects.Caching;
 using UstaTakip.Core.Aspects.Transaction;
 using UstaTakip.Core.Aspects.Validation;
 using UstaTakip.Core.Utilities.Results;
@@ -74,7 +75,36 @@ namespace UstaTakip.Application.Services.Managers
         var dto = _mapper.Map<List<InsurancePolicyListDto>>(list);
         return new SuccessDataResult<List<InsurancePolicyListDto>>(dto);
     }
-}
+        [CacheAspect]
+        public async Task<IDataResult<List<InsurancePolicyListDto>>> GetExpiringAsync(int days, int take)
+        {
+            days = Math.Clamp(days, 1, 365);
+            take = Math.Clamp(take, 1, 100);
+
+            var list = await _insurancePolicyDal.GetExpiringAsync(DateTime.UtcNow, days, take);
+
+            // Map (AutoMapper kullanmıyorsan manuel doldur)
+            var dto = list.Select(p => new InsurancePolicyListDto
+            {
+                Id = p.Id,
+                CompanyName = p.CompanyName,
+                PolicyNumber = p.PolicyNumber,
+                StartDate = p.StartDate,
+                EndDate = p.EndDate,
+                CoverageAmount = p.CoverageAmount,
+                VehicleId = p.VehicleId
+            }).ToList();
+
+            return new SuccessDataResult<List<InsurancePolicyListDto>>(dto);
+        }
+
+        [CacheAspect]
+        public async Task<IDataResult<int>> GetActiveCountAsync()
+        {
+            var count = await _insurancePolicyDal.GetActiveCountAsync();
+            return new SuccessDataResult<int>(count);
+        }
+    }
 
 
 }

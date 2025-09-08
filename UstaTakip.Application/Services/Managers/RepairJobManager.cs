@@ -57,7 +57,7 @@ namespace UstaTakip.Application.Services.Managers
         [CacheAspect]
         public async Task<IDataResult<List<RepairJobListDto>>> GetAllAsync()
         {
-            var jobs = await _repairJobDal.GetAllAsync();
+            var jobs = await _repairJobDal.GetAllWithVehicleAsync();
             var dto = _mapper.Map<List<RepairJobListDto>>(jobs);
             return new SuccessDataResult<List<RepairJobListDto>>(dto);
         }
@@ -65,7 +65,7 @@ namespace UstaTakip.Application.Services.Managers
         [CacheAspect]
         public async Task<IDataResult<RepairJobListDto>> GetByIdAsync(Guid id)
         {
-            var job = await _repairJobDal.GetAsync(x => x.Id == id);
+            var job = await _repairJobDal.GetByIdWithVehicleAsync(id);
             if (job == null)
                 return new ErrorDataResult<RepairJobListDto>("İşlem bulunamadı.");
 
@@ -80,6 +80,15 @@ namespace UstaTakip.Application.Services.Managers
             var dto = _mapper.Map<List<RepairJobListDto>>(jobs);
             return new SuccessDataResult<List<RepairJobListDto>>(dto);
         }
+        [CacheAspect]
+        public async Task<IDataResult<List<RepairJobListDto>>> GetRecentAsync(int take)
+        {
+            take = Math.Clamp(take, 1, 100);
+            var entities = await _repairJobDal.GetRecentWithVehicleAsync(take);
+            var dto = _mapper.Map<List<RepairJobListDto>>(entities);
+            return new SuccessDataResult<List<RepairJobListDto>>(dto);
+        }
+
     }
 
 

@@ -7,7 +7,10 @@ using UstaTakip.Domain.Entities;
 
 namespace UstaTakip.Application.Repositories
 {
-    public interface IRepairJobDal:IEntityRepository<RepairJob>
+    public interface IRepairJobDal : IEntityRepository<RepairJob>
     {
+        Task<List<RepairJob>> GetAllWithVehicleAsync();
+        Task<RepairJob?> GetByIdWithVehicleAsync(Guid id);
+        Task<List<RepairJob>> GetRecentWithVehicleAsync(int take);
     }
 }

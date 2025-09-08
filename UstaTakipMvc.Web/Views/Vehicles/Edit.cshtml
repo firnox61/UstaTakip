@@ -1,11 +1,29 @@
 ﻿@model UstaTakipMvc.Web.Models.Vehicles.VehicleUpdateDto
 @using UstaTakipMvc.Web.Models.VehicleImages
+@using Microsoft.AspNetCore.Mvc.Rendering
+@inject IConfiguration Config
+
 @{
     Layout = "~/Views/Shared/_Layout.App.cshtml";
     ViewData["Title"] = "Araç Düzenle";
 
     var customers = ViewBag.Customers as List<SelectListItem> ?? new();
     var images = ViewBag.VehicleImages as List<VehicleImageListDto> ?? new();
+
+    // ApiSettings:BaseUrl -> ör: https://localhost:5280/api/
+    // Biz sadece host/scheme istiyoruz: https://localhost:5280
+    string apiBaseConfig = Config["ApiSettings:BaseUrl"]?.TrimEnd('/') ?? "";
+    string apiHost = apiBaseConfig;
+
+    try
+    {
+        if (Uri.TryCreate(apiBaseConfig, UriKind.Absolute, out var u))
+        {
+            apiHost = $"{u.Scheme}://{u.Authority}";
+        }
+        // Aksi halde bırakıldığı gibi kalır; relative ise img.ImagePath zaten absolute /images/... olduğu için sorun olmaz.
+    }
+    catch { /* yut */ }
 }
 
 <h4>Araç Düzenle</h4>
@@ -58,15 +76,19 @@
 </form>
 
 <hr />
-<h5>Resimler</h5>
+<h5 class="mt-4">Resimler</h5>
 
 <form asp-action="UploadImage" method="post" enctype="multipart/form-data" class="row g-2">
     @Html.AntiForgeryToken()
     <input type="hidden" name="vehicleId" value="@Model.Id" />
 
     <div class="col-md-8">
-        <input name="imageFile" type="file" accept="image/*" class="form-control" />
-        <div class="form-text">Maks. 5MB, yalnızca görüntü dosyaları.</div>
+        <!-- Çoklu yüklemeyi sonra ekleyeceğiz: şimdilik tekli -->
+        <input name="imageFile"
+               type="file"
+               accept="image/png,image/jpeg,image/webp,image/gif"
+               class="form-control" />
+        <div class="form-text">PNG / JPEG / WEBP / GIF desteklenir. Maks. 5MB.</div>
     </div>
     <div class="col-md-4 d-grid">
         <button type="submit" class="btn btn-outline-primary">
@@ -77,25 +99,40 @@
 
 @if (images.Any())
 {
-    <div class="row row-cols-2 row-cols-md-4 g-3 mt-2">
+    <div class="row row-cols-2 row-cols-md-4 row-cols-xl-6 g-3 mt-2">
         @foreach (var img in images)
         {
+            // Tam URL üret (API başka origin/port ise)
+            var fullSrc = string.IsNullOrEmpty(apiHost) ? img.ImagePath : (apiHost + img.ImagePath);
+
             <div class="col">
-                <div class="card h-100">
-                    <img src="@img.ImagePath"
-                         class="card-img-top"
-                         style="object-fit:cover; aspect-ratio:1/1;"
-                         alt="Araç resmi" />
-                    <div class="card-body p-2">
-                        <div class="small text-muted">
-                            @img.UploadedAt.ToString("dd.MM.yyyy HH:mm")
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="ratio ratio-1x1">
+                        <img src="@fullSrc"
+                             class="img-fluid rounded-top w-100 h-100"
+                             style="object-fit:cover"
+                             alt="Araç resmi"
+                             loading="lazy"
+                             onclick="openImgModal('@img.ImagePath')"
+                             onerror="this.closest('.card').querySelector('.img-debug')?.classList.remove('d-none')" />
+                    </div>
+                    <div class="card-body p-2 d-flex flex-column gap-2">
+                        <small class="text-muted">@img.UploadedAt.ToString("dd.MM.yyyy HH:mm")</small>
+
+                        <!-- Hata durumunda debug linki göster -->
+                        <div class="img-debug d-none">
+                            <span class="badge bg-warning text-dark">Görsel yüklenemedi</span>
+                            <div class="small text-break">
+                                <a href="@fullSrc" target="_blank">@fullSrc</a>
+                            </div>
                         </div>
 
-                        <form asp-action="DeleteImage" method="post" class="mt-2 d-grid">
+                        <form asp-action="DeleteImage" method="post" class="mt-auto">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="id" value="@img.Id" />
                             <input type="hidden" name="vehicleId" value="@img.VehicleId" />
                             <button type="submit" class="btn btn-sm btn-outline-danger"
+                                    title="Sil"
                                     onclick="return confirm('Bu resmi silmek istediğinize emin misiniz?')">
                                 <i class="fa-regular fa-trash-can me-1"></i> Sil
                             </button>
@@ -108,11 +145,29 @@
 }
 else
 {
-    <div class="alert alert-info mt-2">
-        Bu araca ait henüz bir resim bulunmuyor.
-    </div>
+    <div class="alert alert-info mt-2">Bu araca ait henüz bir resim bulunmuyor.</div>
 }
+
+<!-- Lightbox -->
+<div class="modal fade" id="imgModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-dark border-0">
+            <img id="imgModalPic" class="w-100" alt="image" />
+        </div>
+    </div>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Razor'dan apiHost'u JS'e geçir
+        const API_HOST = '@apiHost';
+
+        function openImgModal(src) {
+            const full = API_HOST ? (API_HOST + src) : src;
+            document.getElementById('imgModalPic').src = full;
+            const m = new bootstrap.Modal(document.getElementById('imgModal'));
+            m.show();
+        }
+    </script>
 }

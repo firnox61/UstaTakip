@@ -1,5 +1,6 @@
 ﻿using UstaTakip.Core.Abstractions;
 using System.Linq.Expressions;
+using UstaTakip.Domain.Entities;
 
 namespace UstaTakip.Application.Repositories
 {
@@ -10,5 +11,6 @@ namespace UstaTakip.Application.Repositories
         Task AddAsync(T entity);
         Task UpdateAsync(T entity);
         Task DeleteAsync(T entity);
+       
     }
 }

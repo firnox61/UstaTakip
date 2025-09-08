@@ -33,21 +33,18 @@ public class HomeController : Controller
 
         try
         {
-            // Son 5 araç
-            var vehicleResp = await GetApiResponse<List<VehicleListDto>>(
-                "vehicles?take=5&orderBy=createdAt_desc", ct);
-            vm.RecentVehicles = vehicleResp?.Data ?? new();
-            vm.VehicleCount = vm.RecentVehicles.Count;
+            // Son 5 araç (API’de özel endpoint yoksa normal listeyi kullanýyoruz)
+            var vehicleResp = await GetApiResponse<List<VehicleListDto>>("vehicles", ct);
+            vm.RecentVehicles = (vehicleResp?.Data ?? new()).OrderByDescending(v => v.Id).Take(5).ToList();
+            vm.VehicleCount = vehicleResp?.Data?.Count ?? 0;
 
             // Yakýnda bitecek poliçeler
-            var policyResp = await GetApiResponse<List<InsurancePolicyListDto>>(
-                "insurancepolicies/expiring?days=30&take=5", ct);
+            var policyResp = await GetApiResponse<List<InsurancePolicyListDto>>("insurancepolicies/expiring?days=30&take=5", ct);
             vm.ExpiringPolicies = policyResp?.Data ?? new();
             vm.PoliciesExpiringSoonCount = vm.ExpiringPolicies.Count;
 
             // Son 5 tamir kaydý
-            var repairResp = await GetApiResponse<List<RepairJobListDto>>(
-                "repairjobs/recent?take=5", ct);
+            var repairResp = await GetApiResponse<List<RepairJobListDto>>("repairjobs/recent?take=5", ct);
             vm.RecentRepairs = repairResp?.Data ?? new();
             vm.OpenRepairCount = vm.RecentRepairs.Count(r => r.Status?.Equals("Open", StringComparison.OrdinalIgnoreCase) == true);
 
@@ -68,6 +65,7 @@ public class HomeController : Controller
 
         return View(vm);
     }
+
 
     private async Task<ApiDataResult<T>?> GetApiResponse<T>(string endpoint, CancellationToken ct)
     {

@@ -56,7 +56,8 @@ namespace UstaTakip.Application.MappingProfiles
             // RepairJob
             CreateMap<RepairJob, RepairJobCreateDto>().ReverseMap();
             CreateMap<RepairJob, RepairJobUpdateDto>().ReverseMap();
-            CreateMap<RepairJob, RepairJobListDto>().ReverseMap();
+            CreateMap<RepairJob, RepairJobListDto>()
+             .ForMember(d => d.VehiclePlate, o => o.MapFrom(s => s.Vehicle.Plate));
 
             CreateMap<VehicleImage, VehicleImageListDto>().ReverseMap();
             CreateMap<VehicleImage, VehicleImageCreateDto>().ReverseMap();

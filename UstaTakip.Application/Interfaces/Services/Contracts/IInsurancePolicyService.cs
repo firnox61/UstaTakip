@@ -16,6 +16,8 @@ namespace UstaTakip.Application.Interfaces.Services.Contracts
         Task<IResult> AddAsync(InsurancePolicyCreateDto dto);
         Task<IResult> UpdateAsync(InsurancePolicyUpdateDto dto);
         Task<IResult> DeleteAsync(Guid id);
+        Task<IDataResult<List<InsurancePolicyListDto>>> GetExpiringAsync(int days, int take);
+        Task<IDataResult<int>> GetActiveCountAsync();
     }
 
 

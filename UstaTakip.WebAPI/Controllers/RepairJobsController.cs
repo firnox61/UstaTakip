@@ -68,5 +68,13 @@ namespace UstaTakip.WebAPI.Controllers
                 return Ok(result);
             return BadRequest(result);
         }
+        [HttpGet("recent")]
+        public async Task<IActionResult> GetRecent([FromQuery] int take = 5)
+        {
+            var result = await _repairJobService.GetRecentAsync(take);
+            if (result.Success)
+                return Ok(result);
+            return BadRequest(result);
+        }
     }
 }

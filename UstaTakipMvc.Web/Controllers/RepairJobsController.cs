@@ -13,7 +13,6 @@ namespace UstaTakipMvc.Web.Controllers
     {
         private readonly HttpClient _api;
 
-        // API'ler genelde camelCase döner; case-insensitive profil:
         private static readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web)
         {
             PropertyNameCaseInsensitive = true
@@ -21,12 +20,11 @@ namespace UstaTakipMvc.Web.Controllers
 
         public RepairJobsController(IHttpClientFactory factory)
         {
-            // Program.cs:
-            // services.AddHttpClient("UstaApi", c => c.BaseAddress = new Uri("http://localhost:5280/api/"));
+            // Program.cs: services.AddHttpClient("UstaApi", c => c.BaseAddress = new Uri("http://localhost:5280/api/"));
             _api = factory.CreateClient("UstaApi");
         }
 
-        // -------- LIST (kısa tutuyoruz) --------
+        // -------- LIST --------
         [HttpGet]
         public async Task<IActionResult> Index(CancellationToken ct)
         {
@@ -41,11 +39,11 @@ namespace UstaTakipMvc.Web.Controllers
             return View(wrap?.Data ?? new());
         }
 
-        // -------- EDIT --------
+        // -------- EDIT (GET) --------
         [HttpGet]
         public async Task<IActionResult> Edit(Guid id, CancellationToken ct)
         {
-            // Kayıt
+            // API tarafında: [HttpGet("{id:guid}")] => returns RepairJobUpdateDto
             var resp = await _api.GetAsync($"repairjobs/{id}", ct);
             if (!resp.IsSuccessStatusCode)
             {
@@ -61,13 +59,13 @@ namespace UstaTakipMvc.Web.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // Select'leri doldur
-            await LoadVehicleOptionsAsync(ct, model.VehicleId);           // plakalar
-            ViewBag.StatusOptions = BuildStatusOptions(model.Status);     // durumlar
+            await LoadVehicleOptionsAsync(ct, model.VehicleId);
+            ViewBag.StatusOptions = BuildStatusOptions(model.Status);
 
             return View(model);
         }
 
+        // -------- EDIT (POST) --------
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(RepairJobUpdateDto dto, CancellationToken ct)
@@ -79,7 +77,16 @@ namespace UstaTakipMvc.Web.Controllers
                 return View(dto);
             }
 
-            var resp = await _api.PutAsJsonAsync($"repairjobs/{dto.Id}", dto, _json, ct);
+            // ✅ 405'i önlemek için API rotasıyla birebir uyum:
+            // API'NDE ŞUNU KULLAN: [HttpPut("{id:guid}")]  (aşağıdaki satır doğru çağrı olur)
+            var resp = await _api.PutAsJsonAsync("RepairJobs", dto, _json, ct);
+
+            // Eğer API'n "idsiz" PUT kullanıyorsa ( [HttpPut] ):
+            // var resp = await _api.PutAsJsonAsync("repairjobs", dto, _json, ct);
+
+            // Eğer API "POST update" kullanıyorsa:
+            // var resp = await _api.PostAsJsonAsync("repairjobs/update", dto, _json, ct);
+
             if (!resp.IsSuccessStatusCode)
             {
                 TempData["Error"] = await ReadApiErrorAsync(resp, ct);
@@ -92,12 +99,12 @@ namespace UstaTakipMvc.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // -------- helpers (sade) --------
+        // -------- helpers --------
 
-        // Araç listesi: vehicles/list -> VehicleListDto (Id, Plate ...). SelectListItem'a mapler.
         private async Task LoadVehicleOptionsAsync(CancellationToken ct, Guid? selectedId = null)
         {
-            var resp = await _api.GetAsync("vehicles/list", ct); // API'nde "vehicles" ise onu yaz
+            // API’de endpoint tam adı neyse onu yaz: "vehicles/list" veya "vehicles"
+            var resp = await _api.GetAsync("vehicles/list", ct);
             if (!resp.IsSuccessStatusCode)
             {
                 ViewBag.VehicleOptions = new List<SelectListItem>();
@@ -109,13 +116,12 @@ namespace UstaTakipMvc.Web.Controllers
 
             ViewBag.VehicleOptions = vehicles.Select(v => new SelectListItem
             {
-                Text = v.Plate, // plaka göster
+                Text = v.Plate,
                 Value = v.Id.ToString(),
                 Selected = selectedId.HasValue && v.Id == selectedId.Value
             }).ToList();
         }
 
-        // Durum select'i için SelectListItem üretir (tip uyumsuzluğu hatası yaşamazsın)
         private static List<SelectListItem> BuildStatusOptions(string? selected = null)
         {
             var values = new[] { "Open", "InProgress", "Completed", "Cancelled" };
@@ -127,7 +133,6 @@ namespace UstaTakipMvc.Web.Controllers
             }).ToList();
         }
 
-        // Anlaşılır hata metni
         private static async Task<string> ReadApiErrorAsync(HttpResponseMessage resp, CancellationToken ct)
         {
             try
@@ -140,7 +145,7 @@ namespace UstaTakipMvc.Web.Controllers
                     return $"API {(int)resp.StatusCode} {title}{detail}";
                 }
             }
-            catch { /* yutuyoruz, raw'a düşeceğiz */ }
+            catch { /* raw içerik okunacak */ }
 
             var raw = await resp.Content.ReadAsStringAsync(ct);
             return string.IsNullOrWhiteSpace(raw) ? $"API {(int)resp.StatusCode} hatası (boş içerik)." : raw;

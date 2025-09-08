@@ -20,6 +20,16 @@ using UstaTakipMvc.Web.Models.Customers;
 using UstaTakipMvc.Web.Models.Shared;
 using UstaTakipMvc.Web.Models.Vehicles;
 using UstaTakipMvc.Web.Models.VehicleImages;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
+using UstaTakipMvc.Web.Models.Customers;
+using UstaTakipMvc.Web.Models.Shared;
+using UstaTakipMvc.Web.Models.Vehicles;
+using UstaTakipMvc.Web.Models.VehicleImages;
 
 namespace UstaTakipMvc.Web.Controllers
 {
@@ -27,6 +37,8 @@ namespace UstaTakipMvc.Web.Controllers
     public class VehiclesController : Controller
     {
         private readonly HttpClient _api;
+
+        // API genelde camelCase döner; case-insensitive parse için:
         private static readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web)
         {
             PropertyNameCaseInsensitive = true
@@ -182,13 +194,27 @@ namespace UstaTakipMvc.Web.Controllers
 
         // ----------------- Vehicle Images -----------------
 
+        // Esnek okuma: ApiDataResult<List<VehicleImageListDto>> ya da düz List<VehicleImageListDto>
         private async Task<List<VehicleImageListDto>> GetVehicleImagesAsync(Guid vehicleId, CancellationToken ct)
         {
             var resp = await _api.GetAsync($"VehicleImages/by-vehicle/{vehicleId}", ct);
             if (!resp.IsSuccessStatusCode) return new();
 
-            var wrapper = await resp.Content.ReadFromJsonAsync<ApiDataResult<List<VehicleImageListDto>>>(_json, ct);
-            return wrapper?.Data ?? new();
+            var body = await resp.Content.ReadAsStringAsync(ct);
+
+            // 1) Sarmallı dene
+            if (TryDeserialize<ApiDataResult<List<VehicleImageListDto>>>(body, out var wrapped)
+                && wrapped?.Success == true
+                && wrapped.Data is not null)
+            {
+                return wrapped.Data;
+            }
+
+            // 2) Düz liste dene
+            if (TryDeserialize<List<VehicleImageListDto>>(body, out var list) && list is not null)
+                return list;
+
+            return new();
         }
 
         [HttpPost]
@@ -230,18 +256,30 @@ namespace UstaTakipMvc.Web.Controllers
             fileContent.Headers.ContentType = new MediaTypeHeaderValue(imageFile.ContentType);
             content.Add(fileContent, nameof(VehicleImageCreateDto.ImageFile), imageFile.FileName);
 
-            var resp = await _api.PostAsync("VehicleImages", content, ct);
+            // Doğru endpoint: api/VehicleImages/upload
+            var resp = await _api.PostAsync("VehicleImages/upload", content, ct);
+
+            // Sarmallı veya düz metin/mixed yanıt olabilir: önce sarmal dene
+            var body = await resp.Content.ReadAsStringAsync(ct);
             if (!resp.IsSuccessStatusCode)
             {
                 TempData["Error"] = await ReadApiErrorAsync(resp, ct);
                 return RedirectToAction(nameof(Edit), new { id = vehicleId });
             }
 
-            var wrapper = await resp.Content.ReadFromJsonAsync<ApiDataResult<object>>(_json, ct);
-            if (wrapper?.Success != true)
-                TempData["Error"] = wrapper?.Message ?? "Resim yüklenemedi.";
+            // ApiDataResult<object> ise mesajı al
+            if (TryDeserialize<ApiDataResult<object>>(body, out var wrapped) && wrapped is not null)
+            {
+                if (wrapped.Success)
+                    TempData["Success"] = string.IsNullOrWhiteSpace(wrapped.Message) ? "Resim yüklendi." : wrapped.Message;
+                else
+                    TempData["Error"] = string.IsNullOrWhiteSpace(wrapped.Message) ? "Resim yüklenemedi." : wrapped.Message;
+            }
             else
-                TempData["Success"] = "Resim yüklendi.";
+            {
+                // Düz string ise
+                TempData["Success"] = string.IsNullOrWhiteSpace(body) ? "Resim yüklendi." : body;
+            }
 
             return RedirectToAction(nameof(Edit), new { id = vehicleId });
         }
@@ -257,7 +295,17 @@ namespace UstaTakipMvc.Web.Controllers
                 return RedirectToAction(nameof(Edit), new { id = vehicleId });
             }
 
-            TempData["Success"] = "Resim silindi.";
+            // Sarmallı ise mesajı çek
+            var body = await resp.Content.ReadAsStringAsync(ct);
+            if (TryDeserialize<ApiDataResult<object>>(body, out var wrapped) && wrapped is not null)
+            {
+                TempData["Success"] = string.IsNullOrWhiteSpace(wrapped.Message) ? "Resim silindi." : wrapped.Message;
+            }
+            else
+            {
+                TempData["Success"] = "Resim silindi.";
+            }
+
             return RedirectToAction(nameof(Edit), new { id = vehicleId });
         }
 
@@ -287,16 +335,33 @@ namespace UstaTakipMvc.Web.Controllers
         private static async Task<string> ReadApiErrorAsync(HttpResponseMessage resp, CancellationToken ct)
         {
             var body = await resp.Content.ReadAsStringAsync(ct);
+
+            // 1) ApiDataResult<object> ise ondan mesajı al
+            if (TryDeserialize<ApiDataResult<object>>(body, out var wrapper) && wrapper is not null)
+            {
+                if (!string.IsNullOrWhiteSpace(wrapper.Message))
+                    return wrapper.Message;
+            }
+
+            // 2) Düz string gövde varsa onu döndür
+            if (!string.IsNullOrWhiteSpace(body))
+                return $"API hata ({(int)resp.StatusCode}): {body}";
+
+            // 3) Genel
+            return $"API hata ({(int)resp.StatusCode})";
+        }
+
+        private static bool TryDeserialize<T>(string json, out T? value)
+        {
             try
             {
-                var parsed = JsonSerializer.Deserialize<ApiDataResult<object>>(body, _json);
-                return !string.IsNullOrWhiteSpace(parsed?.Message)
-                    ? parsed.Message
-                    : $"API hata ({(int)resp.StatusCode})";
+                value = JsonSerializer.Deserialize<T>(json, _json);
+                return true;
             }
             catch
             {
-                return $"API hata ({(int)resp.StatusCode})";
+                value = default;
+                return false;
             }
         }
     }

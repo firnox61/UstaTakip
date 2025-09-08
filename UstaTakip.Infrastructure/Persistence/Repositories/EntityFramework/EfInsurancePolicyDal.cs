@@ -38,6 +38,34 @@ namespace UstaTakip.Infrastructure.Persistence.Repositories.EntityFramework
                 .Where(p => p.VehicleId == vehicleId)
                 .ToListAsync();
         }
+        public async Task<List<InsurancePolicy>> GetExpiringAsync(DateTime utcNow, int days, int take)
+        {
+            take = Math.Clamp(take, 1, 100);
+            var until = utcNow.AddDays(days);
+
+            return await _context.InsurancePolicies
+                .AsNoTracking()
+                .Where(p => p.EndDate >= utcNow && p.EndDate <= until)
+                .OrderBy(p => p.EndDate)
+                .Take(take)
+                .ToListAsync();
+        }
+
+        public async Task<int> GetActiveCountAsync()
+        {
+            var now = DateTime.UtcNow;
+            return await _context.InsurancePolicies
+                .AsNoTracking()
+                .CountAsync(p => p.EndDate >= now);
+        }
+
+        /*public async Task<int> GetActiveCountAsync()
+        {
+            // Kriterini burada netleştir (Status == "Active" ya da IsActive == true)
+            return await _context.InsurancePolicies
+                .AsNoTracking()
+                .CountAsync(p => p.Status == "Active"); // ihtiyaca göre değiştir
+        }*/
     }
 
 }

@@ -66,6 +66,13 @@ namespace UstaTakip.WebAPI.Controllers
             var result = await _vehicleImageService.DeleteAsync(id);
             return result.Success ? Ok(result.Message) : BadRequest(result.Message);
         }
+        [HttpGet("by-vehicle/{vehicleId}")]
+        public async Task<IActionResult> GetByVehicle(Guid vehicleId)
+        {
+            var listResult = await _vehicleImageService.GetByVehicleIdAsync(vehicleId);
+            return listResult.Success ? Ok(listResult.Data) : BadRequest(listResult.Message);
+        }
+
     }
 }
 
