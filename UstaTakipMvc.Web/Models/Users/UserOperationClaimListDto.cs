@@ -1,5 +1,4 @@
-﻿using UstaTakip.Core.Abstractions;
-namespace UstaTakipMvc.Web.Models.Users
+﻿namespace UstaTakipMvc.Web.Models.Users
 {
     public class UserOperationClaimListDto 
     {

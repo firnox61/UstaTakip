@@ -1,8 +1,165 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model UstaTakipMvc.Web.Models.Dashboards.DashboardViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.App.cshtml";
+    ViewData["Title"] = "Dashboard";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="row g-3">
+    <!-- Sayaçlar -->
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0">
+            <div class="card-body d-flex align-items-center">
+                <i class="fa-solid fa-car-side fa-2x text-primary me-3"></i>
+                <div>
+                    <div class="text-muted small">Araç Sayısı</div>
+                    <div class="h4 m-0">@Model.VehicleCount</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0">
+            <div class="card-body d-flex align-items-center">
+                <i class="fa-solid fa-shield-halved fa-2x text-success me-3"></i>
+                <div>
+                    <div class="text-muted small">Aktif Poliçe</div>
+                    <div class="h4 m-0">@Model.ActivePolicyCount</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0">
+            <div class="card-body d-flex align-items-center">
+                <i class="fa-solid fa-hourglass-half fa-2x text-warning me-3"></i>
+                <div>
+                    <div class="text-muted small">Yakında Bitecek</div>
+                    <div class="h4 m-0">@Model.PoliciesExpiringSoonCount</div>
+                    <div class="small text-muted">30 gün içinde</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0">
+            <div class="card-body d-flex align-items-center">
+                <i class="fa-solid fa-wrench fa-2x text-danger me-3"></i>
+                <div>
+                    <div class="text-muted small">Açık Tamir</div>
+                    <div class="h4 m-0">@Model.OpenRepairCount</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Listeler -->
+<div class="row g-3 mt-1">
+    <!-- Araçlar -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white">
+                <i class="fa-solid fa-car-side me-2"></i>Son Eklenen Araçlar
+                <a href="/Vehicles" class="float-end small text-decoration-none">Tümü</a>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover m-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Plaka</th><th>Marka/Model</th><th>Yıl</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var v in Model.RecentVehicles)
+                    {
+                        <tr>
+                            <td>@v.Plate</td>
+                            <td>@v.Brand @v.Model</td>
+                            <td>@v.Year</td>
+                        </tr>
+                    }
+                    @if (!Model.RecentVehicles.Any())
+                    {
+                        <tr><td colspan="3" class="text-muted small p-3">Kayıt yok</td></tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Poliçeler -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white">
+                <i class="fa-solid fa-file-shield me-2"></i>Yakında Sona Eren Poliçeler (30g)
+                <a href="/InsurancePolicies" class="float-end small text-decoration-none">Tümü</a>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover m-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Şirket</th><th>Poliçe No</th><th>Bitiş</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var p in Model.ExpiringPolicies)
+                    {
+                        <tr>
+                            <td>@p.CompanyName</td>
+                            <td>@p.PolicyNumber</td>
+                            <td>@p.EndDate.ToString("dd.MM.yyyy")</td>
+                        </tr>
+                    }
+                    @if (!Model.ExpiringPolicies.Any())
+                    {
+                        <tr><td colspan="3" class="text-muted small p-3">Yakında süresi dolan poliçe yok</td></tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tamirler -->
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white">
+                <i class="fa-solid fa-screwdriver-wrench me-2"></i>Son Tamir/Bakım Kayıtları
+                <a href="/RepairJobs" class="float-end small text-decoration-none">Tümü</a>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover m-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Açıklama</th><th>Plaka</th><th>Durum</th><th>Tarih</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var r in Model.RecentRepairs)
+                    {
+                        <tr>
+                            <td>@r.Description</td>
+                            <td>@r.VehiclePlate</td>
+                            <td>
+                                <span class="badge bg-@(r.Status?.ToLower() switch {
+                                    "open" => "danger",
+                                    "inprogress" => "warning",
+                                    "completed" => "success",
+                                    "cancelled" => "secondary",
+                                    _ => "secondary"
+                                })">@r.Status</span>
+                            </td>
+                            <td>@r.Date.ToString("dd.MM.yyyy")</td>
+                        </tr>
+                    }
+                    @if (!Model.RecentRepairs.Any())
+                    {
+                        <tr><td colspan="4" class="text-muted small p-3">Kayıt yok</td></tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>

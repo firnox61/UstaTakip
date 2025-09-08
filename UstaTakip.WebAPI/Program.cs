@@ -3,6 +3,7 @@ using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 using UstaTakip.Application.MappingProfiles;
 using UstaTakip.Core.Utilities.IoC;
 using UstaTakip.Infrastructure.Persistence.Context;
@@ -63,7 +64,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = tokenOptions.Issuer,
             ValidAudience = tokenOptions.Audience,
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = SecurityKeyHelper.CreateSecurityKey(tokenOptions.SecurityKey)
+            IssuerSigningKey = SecurityKeyHelper.CreateSecurityKey(tokenOptions.SecurityKey),
+              // Senin JwtHelper claim yazýmýna UYUMLU:
+            RoleClaimType = ClaimTypes.Role,
+            NameClaimType = ClaimTypes.NameIdentifier,
+
+            // “5 dk tolerans”ý kapat — JwtHelper’da UTC kullandýðýmýz için problemsiz
+            ClockSkew = TimeSpan.Zero
         };
     });
 
@@ -98,5 +105,6 @@ app.UseAuthorization();
 //app.UseAntiforgery();
 
 app.MapControllers();
-
+// Basit health endpoint(taný kolay olsun)
+app.MapGet("/api/health", () => Results.Ok(new { ok = true, ts = DateTime.UtcNow }));
 app.Run();

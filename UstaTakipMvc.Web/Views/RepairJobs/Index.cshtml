@@ -1,0 +1,61 @@
+﻿@model List<UstaTakipMvc.Web.Models.RepairJobs.RepairJobListDto>
+@{
+    Layout = "~/Views/Shared/_Layout.App.cshtml";
+    ViewData["Title"] = "Tamir/Bakım Kayıtları";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="m-0">Tamir/Bakım Kayıtları</h4>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fa fa-plus me-1"></i> Yeni Kayıt
+    </a>
+</div>
+
+<table class="table table-hover align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>Plaka</th>
+            <th>İş Açıklaması</th>
+            <th>Fiyat</th>
+            <th>Tarih</th>
+            <th>Durum</th>
+            <th style="width:140px;"></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var x in Model)
+        {
+            <tr>
+                <td>@x.VehiclePlate</td>
+                <td>@x.Description</td>
+                <td>@x.Price.ToString("C0")</td>
+                <td>@x.Date.ToString("dd.MM.yyyy")</td>
+                <td>
+                    <span class="badge bg-@(x.Status switch {
+                        "Open" => "danger",
+                        "InProgress" => "warning",
+                        "Completed" => "success",
+                        "Cancelled" => "secondary",
+                        _ => "secondary"
+                    })">@x.Status</span>
+                </td>
+                <td class="text-end">
+                    <a asp-action="Edit" asp-route-id="@x.Id" class="btn btn-sm btn-outline-secondary">
+                        <i class="fa fa-pen"></i>
+                    </a>
+                    <form asp-action="Delete" asp-route-id="@x.Id" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                onclick="return confirm('Silinsin mi?')">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
+        @if (!Model.Any())
+        {
+            <tr><td colspan="6" class="text-muted text-center py-4">Kayıt bulunamadı.</td></tr>
+        }
+    </tbody>
+</table>

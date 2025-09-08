@@ -1,13 +1,15 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using UstaTakip.Core.Abstractions;
 namespace UstaTakipMvc.Web.Models.Users
 {
     public class UserForLoginDto 
     {
-        [Required(ErrorMessage = "Email zorunludur")]
+        [Required(ErrorMessage = "E-posta zorunludur.")]
+        [EmailAddress(ErrorMessage = "Geçerli bir e-posta giriniz.")]
+        [StringLength(100, ErrorMessage = "E-posta en fazla 100 karakter olabilir.")]
         public string Email { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Şifre zorunludur")]
+        [Required(ErrorMessage = "Şifre zorunludur.")]
+        [StringLength(100, MinimumLength = 6, ErrorMessage = "Şifre en az 6 karakter olmalıdır.")]
         public string Password { get; set; } = string.Empty;
     }
 }

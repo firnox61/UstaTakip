@@ -1,0 +1,78 @@
+﻿@model UstaTakipMvc.Web.Models.InsurancePolicies.InsurancePolicyCreateDto
+@{
+    Layout = "~/Views/Shared/_Layout.App.cshtml";
+    ViewData["Title"] = "Yeni Poliçe";
+
+    // Controller'da LoadVehicles ile doldurulan liste:
+    // ViewBag.Vehicles: List<InsurancePoliciesController.VehicleOption>  (Id, Plate)
+    // ViewBag.VehicleSelected: Guid? (isteğe bağlı)
+    var vehicles = ViewBag.Vehicles as List<UstaTakipMvc.Web.Controllers.InsurancePoliciesController.VehicleOption> ?? new();
+    Guid? selected = ViewBag.VehicleSelected as Guid?;
+}
+
+<h4>Yeni Poliçe</h4>
+<hr />
+
+<form asp-action="Create" method="post" novalidate>
+    @Html.AntiForgeryToken()
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label asp-for="CompanyName" class="form-label">Şirket</label>
+            <input asp-for="CompanyName" class="form-control" />
+            <span asp-validation-for="CompanyName" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="PolicyNumber" class="form-label">Poliçe No</label>
+            <input asp-for="PolicyNumber" class="form-control" />
+            <span asp-validation-for="PolicyNumber" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="StartDate" class="form-label">Başlangıç</label>
+            <input asp-for="StartDate" type="date" class="form-control" />
+            <span asp-validation-for="StartDate" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="EndDate" class="form-label">Bitiş</label>
+            <input asp-for="EndDate" type="date" class="form-control" />
+            <span asp-validation-for="EndDate" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="CoverageAmount" class="form-label">Tutar</label>
+            <input asp-for="CoverageAmount" type="number" step="0.01" class="form-control" />
+            <span asp-validation-for="CoverageAmount" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="VehicleId" class="form-label">Araç (Plaka)</label>
+            <select asp-for="VehicleId" class="form-select" id="vehicleSelect">
+                <option value="">Seçiniz...</option>
+                @foreach (var v in vehicles)
+                {
+                    // Seçim önceliği: Model.VehicleId -> ViewBag.VehicleSelected
+                    var isSelected =
+                    (Model?.VehicleId == v.Id) ||
+                    (Model?.VehicleId == Guid.Empty && selected.HasValue && selected.Value == v.Id);
+
+                    <option value="@v.Id" selected="@(isSelected ? "selected" : null)">@v.Plate</option>
+                }
+            </select>
+            <span asp-validation-for="VehicleId" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="mt-4 d-flex gap-2">
+        <button type="submit" class="btn btn-primary">
+            <i class="fa-regular fa-floppy-disk me-1"></i> Kaydet
+        </button>
+        <a asp-action="Index" class="btn btn-outline-secondary">İptal</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

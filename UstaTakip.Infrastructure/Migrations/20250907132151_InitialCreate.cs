@@ -123,14 +123,38 @@ namespace UstaTakip.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "InsurancePolicies",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CompanyName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PolicyNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CoverageAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    VehicleId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InsurancePolicies", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_InsurancePolicies_Vehicles_VehicleId",
+                        column: x => x.VehicleId,
+                        principalTable: "Vehicles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "RepairJobs",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Price = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    VehicleId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    VehicleId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -163,6 +187,34 @@ namespace UstaTakip.Infrastructure.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "InsurancePayments",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    RepairJobId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    InsurancePolicyId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PaidAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    PaidDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Note = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InsurancePayments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_InsurancePayments_InsurancePolicies_InsurancePolicyId",
+                        column: x => x.InsurancePolicyId,
+                        principalTable: "InsurancePolicies",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_InsurancePayments_RepairJobs_RepairJobId",
+                        column: x => x.RepairJobId,
+                        principalTable: "RepairJobs",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.InsertData(
                 table: "OperationClaims",
                 columns: new[] { "Id", "Name" },
@@ -171,6 +223,22 @@ namespace UstaTakip.Infrastructure.Migrations
                     { 1, "Admin" },
                     { 2, "Garson" }
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InsurancePayments_InsurancePolicyId",
+                table: "InsurancePayments",
+                column: "InsurancePolicyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InsurancePayments_RepairJobId",
+                table: "InsurancePayments",
+                column: "RepairJobId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InsurancePolicies_VehicleId",
+                table: "InsurancePolicies",
+                column: "VehicleId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RepairJobs_VehicleId",
@@ -211,13 +279,19 @@ namespace UstaTakip.Infrastructure.Migrations
                 name: "AuditLogs");
 
             migrationBuilder.DropTable(
-                name: "RepairJobs");
+                name: "InsurancePayments");
 
             migrationBuilder.DropTable(
                 name: "UserOperationClaims");
 
             migrationBuilder.DropTable(
                 name: "VehicleImages");
+
+            migrationBuilder.DropTable(
+                name: "InsurancePolicies");
+
+            migrationBuilder.DropTable(
+                name: "RepairJobs");
 
             migrationBuilder.DropTable(
                 name: "OperationClaims");

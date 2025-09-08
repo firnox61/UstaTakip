@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using UstaTakip.Core.Abstractions;
 
 namespace UstaTakipMvc.Web.Models.Vehicles
 {
-    public class VehicleCreateDto
+    public class VehicleCreateDto : IVehicleForm
     {
         public string Plate { get; set; }
         public string Brand { get; set; }

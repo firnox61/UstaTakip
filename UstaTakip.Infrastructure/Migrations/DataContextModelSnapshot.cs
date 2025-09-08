@@ -51,7 +51,7 @@ namespace UstaTakip.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AuditLogs");
+                    b.ToTable("AuditLogs", (string)null);
                 });
 
             modelBuilder.Entity("UstaTakip.Domain.Entities.Customer", b =>
@@ -71,6 +71,71 @@ namespace UstaTakip.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Customers", (string)null);
+                });
+
+            modelBuilder.Entity("UstaTakip.Domain.Entities.InsurancePayment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("InsurancePolicyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("PaidAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("PaidDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("RepairJobId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InsurancePolicyId");
+
+                    b.HasIndex("RepairJobId")
+                        .IsUnique();
+
+                    b.ToTable("InsurancePayments", (string)null);
+                });
+
+            modelBuilder.Entity("UstaTakip.Domain.Entities.InsurancePolicy", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CompanyName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("CoverageAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PolicyNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("VehicleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VehicleId");
+
+                    b.ToTable("InsurancePolicies", (string)null);
                 });
 
             modelBuilder.Entity("UstaTakip.Domain.Entities.OperationClaim", b =>
@@ -116,7 +181,12 @@ namespace UstaTakip.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("VehicleId")
                         .HasColumnType("uniqueidentifier");
@@ -244,6 +314,36 @@ namespace UstaTakip.Infrastructure.Migrations
                     b.ToTable("VehicleImages", (string)null);
                 });
 
+            modelBuilder.Entity("UstaTakip.Domain.Entities.InsurancePayment", b =>
+                {
+                    b.HasOne("UstaTakip.Domain.Entities.InsurancePolicy", "InsurancePolicy")
+                        .WithMany("InsurancePayments")
+                        .HasForeignKey("InsurancePolicyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("UstaTakip.Domain.Entities.RepairJob", "RepairJob")
+                        .WithOne("InsurancePayment")
+                        .HasForeignKey("UstaTakip.Domain.Entities.InsurancePayment", "RepairJobId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("InsurancePolicy");
+
+                    b.Navigation("RepairJob");
+                });
+
+            modelBuilder.Entity("UstaTakip.Domain.Entities.InsurancePolicy", b =>
+                {
+                    b.HasOne("UstaTakip.Domain.Entities.Vehicle", "Vehicle")
+                        .WithMany("InsurancePolicies")
+                        .HasForeignKey("VehicleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Vehicle");
+                });
+
             modelBuilder.Entity("UstaTakip.Domain.Entities.RepairJob", b =>
                 {
                     b.HasOne("UstaTakip.Domain.Entities.Vehicle", "Vehicle")
@@ -301,9 +401,20 @@ namespace UstaTakip.Infrastructure.Migrations
                     b.Navigation("Vehicles");
                 });
 
+            modelBuilder.Entity("UstaTakip.Domain.Entities.InsurancePolicy", b =>
+                {
+                    b.Navigation("InsurancePayments");
+                });
+
             modelBuilder.Entity("UstaTakip.Domain.Entities.OperationClaim", b =>
                 {
                     b.Navigation("UserOperationClaims");
+                });
+
+            modelBuilder.Entity("UstaTakip.Domain.Entities.RepairJob", b =>
+                {
+                    b.Navigation("InsurancePayment")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("UstaTakip.Domain.Entities.User", b =>
@@ -313,6 +424,8 @@ namespace UstaTakip.Infrastructure.Migrations
 
             modelBuilder.Entity("UstaTakip.Domain.Entities.Vehicle", b =>
                 {
+                    b.Navigation("InsurancePolicies");
+
                     b.Navigation("RepairJobs");
 
                     b.Navigation("VehicleImages");

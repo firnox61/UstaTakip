@@ -1,40 +1,118 @@
 ﻿@model UstaTakipMvc.Web.Models.Vehicles.VehicleUpdateDto
-
+@using UstaTakipMvc.Web.Models.VehicleImages
 @{
-    ViewData["Title"] = "Araç Güncelle";
+    Layout = "~/Views/Shared/_Layout.App.cshtml";
+    ViewData["Title"] = "Araç Düzenle";
+
+    var customers = ViewBag.Customers as List<SelectListItem> ?? new();
+    var images = ViewBag.VehicleImages as List<VehicleImageListDto> ?? new();
 }
 
-<h2>Araç Güncelle</h2>
+<h4>Araç Düzenle</h4>
+<hr />
 
-@if (ViewBag.Error != null)
-{
-    <div class="alert alert-danger">@ViewBag.Error</div>
-}
-
-<form method="post">
+<form asp-action="Edit" method="post" novalidate>
+    @Html.AntiForgeryToken()
     <input type="hidden" asp-for="Id" />
 
-    <div class="mb-3">
-        <label class="form-label">Plaka</label>
-        <input type="text" class="form-control" asp-for="Plate" required />
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Marka</label>
-        <input type="text" class="form-control" asp-for="Brand" required />
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Model</label>
-        <input type="text" class="form-control" asp-for="Model" required />
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Yıl</label>
-        <input type="number" class="form-control" asp-for="Year" required />
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Müşteri ID</label>
-        <input type="text" class="form-control" asp-for="CustomerId" required />
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label asp-for="Plate" class="form-label">Plaka</label>
+            <input asp-for="Plate" class="form-control" />
+            <span asp-validation-for="Plate" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="Brand" class="form-label">Marka</label>
+            <input asp-for="Brand" class="form-control" />
+            <span asp-validation-for="Brand" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="Model" class="form-label">Model</label>
+            <input asp-for="Model" class="form-control" />
+            <span asp-validation-for="Model" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="Year" class="form-label">Yıl</label>
+            <input asp-for="Year" type="number" class="form-control" />
+            <span asp-validation-for="Year" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="CustomerId" class="form-label">Müşteri</label>
+            <select asp-for="CustomerId" class="form-select" asp-items="customers">
+                <option value="">Seçiniz...</option>
+            </select>
+            <span asp-validation-for="CustomerId" class="text-danger"></span>
+        </div>
     </div>
 
-    <button type="submit" class="btn btn-primary">Güncelle</button>
-    <a asp-action="Index" class="btn btn-secondary">İptal</a>
+    <div class="mt-4 d-flex gap-2">
+        <button type="submit" class="btn btn-primary">
+            <i class="fa-regular fa-floppy-disk me-1"></i> Kaydet
+        </button>
+        <a asp-action="Index" class="btn btn-outline-secondary">İptal</a>
+    </div>
 </form>
+
+<hr />
+<h5>Resimler</h5>
+
+<form asp-action="UploadImage" method="post" enctype="multipart/form-data" class="row g-2">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="vehicleId" value="@Model.Id" />
+
+    <div class="col-md-8">
+        <input name="imageFile" type="file" accept="image/*" class="form-control" />
+        <div class="form-text">Maks. 5MB, yalnızca görüntü dosyaları.</div>
+    </div>
+    <div class="col-md-4 d-grid">
+        <button type="submit" class="btn btn-outline-primary">
+            <i class="fa-solid fa-upload me-1"></i> Yükle
+        </button>
+    </div>
+</form>
+
+@if (images.Any())
+{
+    <div class="row row-cols-2 row-cols-md-4 g-3 mt-2">
+        @foreach (var img in images)
+        {
+            <div class="col">
+                <div class="card h-100">
+                    <img src="@img.ImagePath"
+                         class="card-img-top"
+                         style="object-fit:cover; aspect-ratio:1/1;"
+                         alt="Araç resmi" />
+                    <div class="card-body p-2">
+                        <div class="small text-muted">
+                            @img.UploadedAt.ToString("dd.MM.yyyy HH:mm")
+                        </div>
+
+                        <form asp-action="DeleteImage" method="post" class="mt-2 d-grid">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@img.Id" />
+                            <input type="hidden" name="vehicleId" value="@img.VehicleId" />
+                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                    onclick="return confirm('Bu resmi silmek istediğinize emin misiniz?')">
+                                <i class="fa-regular fa-trash-can me-1"></i> Sil
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-info mt-2">
+        Bu araca ait henüz bir resim bulunmuyor.
+    </div>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

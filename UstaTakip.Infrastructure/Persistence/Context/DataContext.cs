@@ -108,7 +108,9 @@ namespace UstaTakip.Infrastructure.Persistence.Context
             modelBuilder.Entity<RepairJob>().ToTable("RepairJobs");
             modelBuilder.Entity<VehicleImage>().ToTable("VehicleImages"); // ✅ Yeni tablo
 
-
+            modelBuilder.Entity<InsurancePolicy>().ToTable("InsurancePolicies");
+            modelBuilder.Entity<InsurancePayment>().ToTable("InsurancePayments");
+            modelBuilder.Entity<AuditLog>().ToTable("AuditLogs");
         }
 
     }

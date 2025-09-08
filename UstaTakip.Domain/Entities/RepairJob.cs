@@ -16,7 +16,7 @@ namespace UstaTakip.Domain.Entities
         public Guid VehicleId { get; set; }
         public Vehicle Vehicle { get; set; }
         public InsurancePayment InsurancePayment { get; set; }
-
+        public string Status { get; set; } = "Open"; // varsayılan
     }
 
 }

@@ -1,0 +1,121 @@
+﻿@using UstaTakipMvc.Web.Models.Customers
+@model List<CustomerListDto>
+
+@{
+    ViewData["Title"] = "Müşteriler";
+    ViewData["ActiveMenu"] = "Customers"; // sol menüde bu key'i eklemek istersen
+}
+
+<div class="d-flex align-items-center mb-3">
+    <h4 class="mb-0 me-auto"><i class="fa-solid fa-users me-2"></i>Müşteriler</h4>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fa-solid fa-plus me-1"></i> Yeni Müşteri
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="row g-2 mb-3">
+            <div class="col-12 col-md-6 ms-auto">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <input id="q" type="search" class="form-control" placeholder="İsim veya telefon ile ara...">
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table id="tbl" class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Ad Soyad</th>
+                        <th style="width:180px;">Telefon</th>
+                        <th style="width:140px;" class="text-end">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var c in Model)
+                        {
+                            <tr data-row>
+                                <td data-col>@c.FullName</td>
+                                <td data-col>@c.Phone</td>
+                                <td class="text-end">
+                                    <a asp-action="Edit" asp-route-id="@c.Id" class="btn btn-sm btn-outline-secondary">
+                                        <i class="fa-regular fa-pen-to-square"></i>
+                                    </a>
+                                    <button class="btn btn-sm btn-outline-danger ms-1"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#confirmDeleteModal"
+                                            data-id="@c.Id"
+                                            data-title="@c.FullName">
+                                        <i class="fa-regular fa-trash-can"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr><td colspan="3" class="text-center text-muted py-4">Kayıt bulunamadı.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Silme Onay Modali -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title"><i class="fa-regular fa-trash-can me-2"></i>Müşteri Sil</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning mb-0">
+                    <div class="small text-muted">Silinecek kayıt:</div>
+                    <div class="fw-semibold" id="delItemTitle">-</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <form asp-action="Delete" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" id="delId" />
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fa-regular fa-trash-can me-1"></i> Sil
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Arama
+            const q = document.getElementById("q");
+            const rows = Array.from(document.querySelectorAll("#tbl tbody tr[data-row]"));
+            q?.addEventListener("input", function () {
+                const needle = (q.value || "").toLowerCase();
+                rows.forEach(tr => {
+                    const hay = Array.from(tr.querySelectorAll("[data-col]"))
+                                     .map(td => (td.textContent || "").toLowerCase()).join(" ");
+                    tr.style.display = hay.includes(needle) ? "" : "none";
+                });
+            });
+
+            // Delete modal
+            const modal = document.getElementById('confirmDeleteModal');
+            modal?.addEventListener('show.bs.modal', function (event) {
+                const btn = event.relatedTarget;
+                document.getElementById('delId').value = btn.getAttribute('data-id');
+                document.getElementById('delItemTitle').textContent = btn.getAttribute('data-title');
+            });
+        });
+    </script>
+}

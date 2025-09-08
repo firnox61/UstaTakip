@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using UstaTakip.Core.Abstractions;
 
 namespace UstaTakipMvc.Web.Models.Customers
 {
-    public class CustomerCreateDto 
+    public class CustomerCreateDto : ICustomerForm
     {
         public string FullName { get; set; }
         public string Phone { get; set; }

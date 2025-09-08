@@ -24,7 +24,7 @@ namespace UstaTakip.Infrastructure.Security.Jwt
     {
         public IConfiguration Configuration { get; }//appsettingsdeki değerleri okuyor
         private TokenOptions _tokenOptions;//okunnan değerleri bir nesneye atamamaıız lazım
-        private DateTime _accessTokenExpiration;//yoken zzamanı
+        private DateTime _accessTokenExpirationUtc;//yoken zzamanı
         public JwtHelper(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -33,7 +33,7 @@ namespace UstaTakip.Infrastructure.Security.Jwt
         }
         public AccessToken CreateToken(User user, List<OperationClaim> operationClaims)
         {
-            _accessTokenExpiration = DateTime.Now.AddMinutes(_tokenOptions.AccessTokenExpiration);
+            _accessTokenExpirationUtc = DateTime.Now.AddMinutes(_tokenOptions.AccessTokenExpiration);
             var securityKey = SecurityKeyHelper.CreateSecurityKey(_tokenOptions.SecurityKey);
             var signingCredentials = SigningCredentialsHelper.CreateSigningCredentials(securityKey);
             var jwt = CreateJwtSecurityToken(_tokenOptions, user, signingCredentials, operationClaims);
@@ -43,7 +43,7 @@ namespace UstaTakip.Infrastructure.Security.Jwt
             return new AccessToken
             {
                 Token = token,
-                Expiration = _accessTokenExpiration
+                Expiration = _accessTokenExpirationUtc
             };
 
         }
@@ -54,7 +54,7 @@ namespace UstaTakip.Infrastructure.Security.Jwt
             var jwt = new JwtSecurityToken(
                 issuer: tokenOptions.Issuer,
                 audience: tokenOptions.Audience,
-                expires: _accessTokenExpiration,
+                expires: _accessTokenExpirationUtc,
                 notBefore: DateTime.UtcNow,
                 claims: SetClaims(user, operationClaims),
                 signingCredentials: signingCredentials

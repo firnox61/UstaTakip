@@ -8,7 +8,7 @@ namespace UstaTakip.Infrastructure.Persistence.Context
     {
         public DataContext CreateDbContext(string[] args)
         {
-            var basePath = Path.Combine(Directory.GetCurrentDirectory(), "../UstaTakip.Web"); // 🔥 WebAPI klasörünü hedefle
+            var basePath = Path.Combine(Directory.GetCurrentDirectory(), "../UstaTakip.WebAPI"); // 🔥 WebAPI klasörünü hedefle
 
             IConfigurationRoot configuration = new ConfigurationBuilder()
                 .SetBasePath(basePath)

@@ -1,45 +1,132 @@
-﻿@model List<UstaTakipMvc.Web.Models.Vehicles.VehicleListDto>
+﻿@using UstaTakipMvc.Web.Models.Vehicles
+@model List<VehicleListDto>
 
 @{
-    ViewData["Title"] = "Araç Listesi";
+    Layout = "~/Views/Shared/_Layout.App.cshtml";
+    ViewData["Title"] = "Araçlar";
+    ViewData["ActiveMenu"] = "Vehicles";
 }
 
-<h2>Araç Listesi</h2>
+<div class="d-flex align-items-center mb-3">
+    <h4 class="mb-0 me-auto"><i class="fa-solid fa-car-side me-2"></i>Araçlar</h4>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fa-solid fa-plus me-1"></i> Yeni Araç
+    </a>
+</div>
 
-<a class="btn btn-success mb-3" asp-action="Create">Yeni Araç Ekle</a>
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="row g-2 mb-3">
+            <div class="col-12 col-md-6 ms-auto">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <input id="q" type="search" class="form-control" placeholder="Plaka, müşteri, marka/model ara...">
+                </div>
+            </div>
+        </div>
 
-<table class="table table-striped">
-    <thead class="table-dark">
-        <tr>
-            <th>Plaka</th>
-            <th>Marka</th>
-            <th>Model</th>
-            <th>Yıl</th>
-            <th>İşlemler</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>@item.Plate</td>
-                <td>@item.Brand</td>
-                <td>@item.Model</td>
-                <td>@item.Year</td>
-                <td>
-                    <a asp-controller="VehicleImages" asp-action="Upload" asp-route-vehicleId="@item.Id" class="btn btn-sm btn-outline-secondary">
-                        Resim Ekle
-                    </a>
+        <div class="table-responsive">
+            <table id="vehiclesTable" class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:140px;">Plaka</th>
+                        <th>Müşteri</th>
+                        <th>Marka / Model</th>
+                        <th style="width:100px;">Yıl</th>
+                        <th style="width:110px;">Görsel</th>
+                        <th style="width:140px;" class="text-end">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var v in Model)
+                        {
+                            <tr data-row>
+                                <td data-col>@v.Plate</td>
+                                <td data-col>@v.CustomerName</td>
+                                <td data-col>@($"{v.Brand} {v.Model}")</td>
+                                <td data-col>@v.Year</td>
+                                <td data-col>
+                                    <span class="badge text-bg-secondary">
+                                        <i class="fa-regular fa-image me-1"></i>@(v.Images?.Count ?? 0)
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <a asp-action="Edit" asp-route-id="@v.Id" class="btn btn-sm btn-outline-secondary">
+                                        <i class="fa-regular fa-pen-to-square"></i>
+                                    </a>
+                                    <button class="btn btn-sm btn-outline-danger ms-1"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#confirmDeleteModal"
+                                            data-id="@v.Id"
+                                            data-title="@v.Plate">
+                                        <i class="fa-regular fa-trash-can"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr><td colspan="6" class="text-center text-muted py-4">Kayıt bulunamadı.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
+<!-- Silme Onay Modali -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title"><i class="fa-regular fa-trash-can me-2"></i>Araç Sil</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning mb-0">
+                    <div class="small text-muted">Silinecek kayıt:</div>
+                    <div class="fw-semibold" id="delItemTitle">-</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <form id="delForm" asp-action="Delete" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" id="delId" />
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fa-regular fa-trash-can me-1"></i> Sil
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
-                    <a href="@Url.Action("Edit", "Vehicles", new { id = item.Id })" class="btn btn-warning btn-sm">Güncelle</a>
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // client-side arama
+            const q = document.getElementById("q");
+            const rows = Array.from(document.querySelectorAll("#vehiclesTable tbody tr[data-row]"));
+            q?.addEventListener("input", function () {
+                const needle = (q.value || "").toLowerCase();
+                rows.forEach(tr => {
+                    const hay = Array.from(tr.querySelectorAll("[data-col]"))
+                                     .map(td => (td.textContent || "").toLowerCase()).join(" ");
+                    tr.style.display = hay.includes(needle) ? "" : "none";
+                });
+            });
 
-                    <form asp-action="Delete" method="post" style="display:inline;" onsubmit="return confirm('Silmek istediğinizden emin misiniz?');">
-                        <input type="hidden" name="id" value="@item.Id" />
-                        <button type="submit" class="btn btn-danger btn-sm">Sil</button>
-                    </form>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+            // delete modal set
+            const modal = document.getElementById('confirmDeleteModal');
+            modal?.addEventListener('show.bs.modal', function (event) {
+                const btn = event.relatedTarget;
+                document.getElementById('delId').value = btn.getAttribute('data-id');
+                document.getElementById('delItemTitle').textContent = btn.getAttribute('data-title');
+            });
+        });
+    </script>
+}

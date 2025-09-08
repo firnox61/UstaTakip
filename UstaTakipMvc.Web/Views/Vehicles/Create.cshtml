@@ -1,45 +1,37 @@
-﻿@model UstaTakipMvc.Web.Models.Vehicles.VehicleCreateDto
+﻿@using UstaTakipMvc.Web.Models.Vehicles
+@model VehicleCreateDto
 
 @{
-    ViewData["Title"] = "Yeni Araç Ekle";
-    var customers = ViewBag.Customers as List<SelectListItem> ?? new List<SelectListItem>();
+    Layout = "~/Views/Shared/_Layout.App.cshtml";
+    ViewData["Title"] = "Araç Ekle";
+    ViewData["ActiveMenu"] = "Vehicles";
 }
 
-<h2>Yeni Araç Ekle</h2>
+<div class="d-flex align-items-center mb-3">
+    <h4 class="mb-0 me-auto"><i class="fa-solid fa-plus me-2"></i>Araç Ekle</h4>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="fa-solid fa-arrow-left"></i> Listeye Dön
+    </a>
+</div>
 
-@if (ViewBag.Error != null)
-{
-    <div class="alert alert-danger">@ViewBag.Error</div>
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form asp-action="Create" method="post" novalidate>
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            @await Html.PartialAsync("_VehicleForm", Model)
+
+            <div class="d-flex gap-2 mt-3">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-regular fa-floppy-disk me-1"></i> Kaydet
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">İptal</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
 }
-
-<form method="post">
-    <div class="mb-3">
-        <label>Plaka</label>
-        <input asp-for="Plate" class="form-control" required />
-    </div>
-    <div class="mb-3">
-        <label>Marka</label>
-        <input asp-for="Brand" class="form-control" required />
-    </div>
-    <div class="mb-3">
-        <label>Model</label>
-        <input asp-for="Model" class="form-control" required />
-    </div>
-    <div class="mb-3">
-        <label>Yıl</label>
-        <input asp-for="Year" type="number" class="form-control" required />
-    </div>
-    <div class="mb-3">
-        <label>Müşteri</label>
-        <select asp-for="CustomerId" class="form-select" required>
-            <option value="">Müşteri Seçin</option>
-            @foreach (var item in customers)
-            {
-                <option value="@item.Value">@item.Text</option>
-            }
-        </select>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Kaydet</button>
-    <a asp-action="Index" class="btn btn-secondary">İptal</a>
-</form>

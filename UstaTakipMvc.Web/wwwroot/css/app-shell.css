@@ -1,0 +1,14 @@
+﻿.app-wrap {
+    min-height: calc(100vh - 56px);
+}
+
+.app-sidebar {
+    width: 260px;
+    background: #fff;
+}
+
+@media (max-width: 992px) {
+    .app-sidebar {
+        display: none;
+    }
+}
