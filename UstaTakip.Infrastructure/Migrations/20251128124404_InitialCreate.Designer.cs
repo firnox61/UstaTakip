@@ -12,7 +12,7 @@ using UstaTakip.Infrastructure.Persistence.Context;
 namespace UstaTakip.Infrastructure.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20250907132151_InitialCreate")]
+    [Migration("20251128124404_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

@@ -20,7 +20,6 @@ namespace UstaTakipMvc.Web.Controllers
 
         public RepairJobsController(IHttpClientFactory factory)
         {
-            // Program.cs: services.AddHttpClient("UstaApi", c => c.BaseAddress = new Uri("http://localhost:5280/api/"));
             _api = factory.CreateClient("UstaApi");
         }
 
@@ -39,11 +38,46 @@ namespace UstaTakipMvc.Web.Controllers
             return View(wrap?.Data ?? new());
         }
 
+        // -------- CREATE (GET) --------
+        [HttpGet]
+        public async Task<IActionResult> Create(CancellationToken ct)
+        {
+            await LoadVehicleOptionsAsync(ct, null);
+            ViewBag.StatusOptions = BuildStatusOptions(null);
+
+            return View(new RepairJobCreateDto());
+        }
+
+        // -------- CREATE (POST) --------
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(RepairJobCreateDto dto, CancellationToken ct)
+        {
+            if (!ModelState.IsValid)
+            {
+                await LoadVehicleOptionsAsync(ct, dto.VehicleId);
+                ViewBag.StatusOptions = BuildStatusOptions(dto.Status);
+                return View(dto);
+            }
+
+            var resp = await _api.PostAsJsonAsync("repairjobs", dto, _json, ct);
+
+            if (!resp.IsSuccessStatusCode)
+            {
+                TempData["Error"] = await ReadApiErrorAsync(resp, ct);
+                await LoadVehicleOptionsAsync(ct, dto.VehicleId);
+                ViewBag.StatusOptions = BuildStatusOptions(dto.Status);
+                return View(dto);
+            }
+
+            TempData["Success"] = "Tamir/Bakım başarıyla oluşturuldu.";
+            return RedirectToAction(nameof(Index));
+        }
+
         // -------- EDIT (GET) --------
         [HttpGet]
         public async Task<IActionResult> Edit(Guid id, CancellationToken ct)
         {
-            // API tarafında: [HttpGet("{id:guid}")] => returns RepairJobUpdateDto
             var resp = await _api.GetAsync($"repairjobs/{id}", ct);
             if (!resp.IsSuccessStatusCode)
             {
@@ -77,15 +111,8 @@ namespace UstaTakipMvc.Web.Controllers
                 return View(dto);
             }
 
-            // ✅ 405'i önlemek için API rotasıyla birebir uyum:
-            // API'NDE ŞUNU KULLAN: [HttpPut("{id:guid}")]  (aşağıdaki satır doğru çağrı olur)
-            var resp = await _api.PutAsJsonAsync("RepairJobs", dto, _json, ct);
-
-            // Eğer API'n "idsiz" PUT kullanıyorsa ( [HttpPut] ):
-            // var resp = await _api.PutAsJsonAsync("repairjobs", dto, _json, ct);
-
-            // Eğer API "POST update" kullanıyorsa:
-            // var resp = await _api.PostAsJsonAsync("repairjobs/update", dto, _json, ct);
+            // API'de PUT /repairjobs şeklinde kullanıyorum
+            var resp = await _api.PutAsJsonAsync("repairjobs", dto, _json, ct);
 
             if (!resp.IsSuccessStatusCode)
             {
@@ -103,7 +130,6 @@ namespace UstaTakipMvc.Web.Controllers
 
         private async Task LoadVehicleOptionsAsync(CancellationToken ct, Guid? selectedId = null)
         {
-            // API’de endpoint tam adı neyse onu yaz: "vehicles/list" veya "vehicles"
             var resp = await _api.GetAsync("vehicles/list", ct);
             if (!resp.IsSuccessStatusCode)
             {
@@ -145,10 +171,12 @@ namespace UstaTakipMvc.Web.Controllers
                     return $"API {(int)resp.StatusCode} {title}{detail}";
                 }
             }
-            catch { /* raw içerik okunacak */ }
+            catch { }
 
             var raw = await resp.Content.ReadAsStringAsync(ct);
-            return string.IsNullOrWhiteSpace(raw) ? $"API {(int)resp.StatusCode} hatası (boş içerik)." : raw;
+            return string.IsNullOrWhiteSpace(raw)
+                ? $"API {(int)resp.StatusCode} hatası (boş içerik)."
+                : raw;
         }
     }
 }

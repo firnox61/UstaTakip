@@ -5,11 +5,7 @@
     Layout = "~/Views/Shared/_Layout.App.cshtml";
     ViewData["Title"] = "Yeni Tamir/Bakım";
 
-    // Controller'dan gelenler:
-    // ViewBag.VehicleOptions : List<SelectListItem>  (Text = Plate, Value = Id)
-    // ViewBag.StatusOptions  : List<string>          (ör. ["Open","InProgress","Completed","Cancelled"])
-    var statusStrings = ViewBag.StatusOptions as List<string> ?? new();
-    var statusSelect = new SelectList(statusStrings);
+    var statusSelect = ViewBag.StatusOptions as List<SelectListItem> ?? new();
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -27,6 +23,7 @@
 
             <div class="row g-3">
                 <div class="col-md-6">
+                    <label asp-for="VehicleId" class="form-label">Araç</label>
                     <select asp-for="VehicleId" class="form-select" asp-items="ViewBag.VehicleOptions">
                         <option value="">Seçiniz...</option>
                     </select>
