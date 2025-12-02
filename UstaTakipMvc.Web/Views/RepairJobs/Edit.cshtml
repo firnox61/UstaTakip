@@ -63,6 +63,7 @@
         </form>
     </div>
 </div>
+@await Html.PartialAsync("_RepairJobImages", Model.Id)
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

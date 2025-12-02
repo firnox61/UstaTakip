@@ -1,0 +1,142 @@
+﻿@model Guid
+@using UstaTakipMvc.Web.Models.RepairJobImages
+@inject IConfiguration Config
+
+@{
+    var repairJobId = Model;
+
+    // API Base URL
+    string apiBase = Config["ApiSettings:BaseUrl"]?.TrimEnd('/') ?? "";
+
+    // Eğer URL /api ile bitiyorsa kaldır → çünkü ImagePath /images/... ile başlıyor
+    if (apiBase.EndsWith("/api", StringComparison.OrdinalIgnoreCase))
+    {
+        apiBase = apiBase[..^4];  // "/api" kaldır
+    }
+
+    // ViewBag’den gelen resimler
+    var imgs = ViewBag.RepairJobImages as List<RepairJobImageListDto> ?? new();
+}
+
+<hr />
+<h5 class="mt-4">Tamir / Bakım Resimleri</h5>
+
+<!-- Upload Form -->
+<form asp-controller="RepairJobImages"
+      asp-action="Upload"
+      method="post"
+      enctype="multipart/form-data"
+      class="row g-2">
+
+    @Html.AntiForgeryToken()
+
+    <input type="hidden" name="repairJobId" value="@repairJobId" />
+
+    <div class="col-md-8">
+        <input type="file" name="file" accept="image/*" class="form-control" required />
+        <div class="form-text">PNG / JPG / WEBP / GIF — Max 5MB</div>
+    </div>
+
+    <div class="col-md-4 d-grid">
+        <button type="submit" class="btn btn-outline-primary">
+            <i class="fa-solid fa-upload me-1"></i> Yükle
+        </button>
+    </div>
+</form>
+
+
+@if (imgs.Any())
+{
+    <div class="row row-cols-2 row-cols-md-4 row-cols-xl-6 g-3 mt-2">
+
+        @foreach (var img in imgs)
+        {
+            // ImagePath normalizasyonu
+            string path = img.ImagePath?.Trim() ?? "";
+
+            if (!path.StartsWith("/"))
+                path = "/" + path;
+
+            string fullSrc = apiBase + path;
+
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="ratio ratio-1x1">
+                        <img src="@fullSrc"
+                             class="img-fluid w-100 h-100 img-thumb"
+                             style="object-fit:cover; cursor:pointer"
+                             loading="lazy"
+                             data-full="@fullSrc"
+                             onclick="openImageModal(this)"
+                             onerror="this.src='/images/no-image.png'" />
+                    </div>
+
+                    <div class="card-body p-2 text-center">
+                        <form asp-controller="RepairJobImages"
+                              asp-action="Delete"
+                              method="post">
+
+                            @Html.AntiForgeryToken()
+
+                            <input type="hidden" name="id" value="@img.Id" />
+                            <input type="hidden" name="repairJobId" value="@repairJobId" />
+
+                            <button type="submit"
+                                    class="btn btn-sm btn-outline-danger w-100"
+                                    onclick="return confirm('Bu resmi silmek istiyor musun?')">
+                                <i class="fa-solid fa-trash"></i> Sil
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+
+    </div>
+}
+else
+{
+    <div class="alert alert-info mt-3">Bu tamir kaydına ait resim bulunmuyor.</div>
+}
+
+<!-- Image Preview Modal -->
+<!-- Image Preview Modal -->
+<div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content bg-dark border-0">
+            <div class="modal-body p-0 position-relative">
+
+                <button type="button" class="btn-close btn-close-white position-absolute end-0 m-2"
+                        data-bs-dismiss="modal" aria-label="Close"></button>
+
+                <img id="modalImage" src="" class="img-fluid w-100" style="max-height:90vh; object-fit:contain;" />
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openImageModal(img) {
+        const src = img.getAttribute("data-full");
+        const modalImg = document.getElementById("modalImage");
+        modalImg.src = src;
+
+        const modal = new bootstrap.Modal(document.getElementById('imagePreviewModal'), {
+            backdrop: true,
+            keyboard: true
+        });
+
+        modal.show();
+    }
+</script>
+
+
+<style>
+    .img-thumb {
+        transition: transform .2s;
+    }
+
+        .img-thumb:hover {
+            transform: scale(1.05);
+        }
+</style>

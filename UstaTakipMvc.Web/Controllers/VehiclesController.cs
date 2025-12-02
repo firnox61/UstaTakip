@@ -352,7 +352,7 @@ namespace UstaTakipMvc.Web.Controllers
             ViewBag.Customers = data
                 .Select(c => new SelectListItem
                 {
-                    Text = c.FullName,
+                    Text = c.DisplayName,
                     Value = c.Id.ToString()
                 })
                 .ToList();

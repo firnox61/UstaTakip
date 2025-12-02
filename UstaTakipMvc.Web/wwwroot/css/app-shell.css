@@ -274,3 +274,14 @@
 :root[data-theme="dark"] .modal .btn-close {
     filter: invert(1);
 }
+/* Modal override */
+.modal-backdrop {
+    z-index: 2050 !important;
+}
+
+.modal {
+    z-index: 2060 !important;
+}
+.modal-dialog {
+    z-index: 2070 !important;
+}

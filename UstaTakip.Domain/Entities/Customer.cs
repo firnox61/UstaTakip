@@ -7,11 +7,31 @@ using System.Threading.Tasks;
 
 namespace UstaTakip.Domain.Entities
 {
-    public class Customer:IEntity
+    public class Customer : IEntity
     {
         public Guid Id { get; set; }
-        public string FullName { get; set; } = string.Empty;
+
+        // Bireysel mi, Tüzel mi?
+        public CustomerType Type { get; set; }
+
+        // Bireysel alanları
+        public string? FullName { get; set; }      // sadece bireysel
+        public string? NationalId { get; set; }    // TC kimlik
+
+        // Tüzel alanları
+        public string? CompanyName { get; set; }   // sadece tüzel
+        public string? TaxNumber { get; set; }     // vergi no
+
+        // Ortak alanlar
         public string Phone { get; set; } = string.Empty;
+        public string Address { get; set; } = string.Empty;
+
         public ICollection<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
+    }
+
+    public enum CustomerType
+    {
+        Individual = 1,  // Bireysel
+        Corporate = 2    // Tüzel
     }
 }

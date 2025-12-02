@@ -22,6 +22,8 @@ namespace UstaTakip.Infrastructure.Persistence.Context
         public DbSet<Customer> Customers => Set<Customer>();
         public DbSet<Vehicle> Vehicles => Set<Vehicle>();
         public DbSet<VehicleImage> VehicleImages => Set<VehicleImage>();
+        public DbSet<RepairJobImage> RepairJobImages => Set<RepairJobImage>();
+
         public DbSet<RepairJob> RepairJobs => Set<RepairJob>();
 
         public DbSet<InsurancePolicy> InsurancePolicies => Set<InsurancePolicy>();
@@ -97,6 +99,13 @@ namespace UstaTakip.Infrastructure.Persistence.Context
                 .WithOne(rj => rj.InsurancePayment)
                 .HasForeignKey<InsurancePayment>(ip => ip.RepairJobId)
                 .OnDelete(DeleteBehavior.Restrict); // İsteğe bağlı: onarım silinirse ödeme kalabilir
+                                                    // RepairJob - RepairJobImage (1:N)
+            modelBuilder.Entity<RepairJob>()
+                .HasMany(r => r.RepairJobImages)
+                .WithOne(i => i.RepairJob)
+                .HasForeignKey(i => i.RepairJobId)
+                .OnDelete(DeleteBehavior.Cascade);
+
 
             // Opsiyonel: RepairJob içinde Navigation Property varsa
             // public InsurancePayment InsurancePayment { get; set; }
@@ -107,6 +116,7 @@ namespace UstaTakip.Infrastructure.Persistence.Context
             modelBuilder.Entity<Vehicle>().ToTable("Vehicles");
             modelBuilder.Entity<RepairJob>().ToTable("RepairJobs");
             modelBuilder.Entity<VehicleImage>().ToTable("VehicleImages"); // ✅ Yeni tablo
+            modelBuilder.Entity<RepairJobImage>().ToTable("RepairJobImages");
 
             modelBuilder.Entity<InsurancePolicy>().ToTable("InsurancePolicies");
             modelBuilder.Entity<InsurancePayment>().ToTable("InsurancePayments");

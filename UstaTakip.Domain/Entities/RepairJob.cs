@@ -17,6 +17,9 @@ namespace UstaTakip.Domain.Entities
         public Vehicle Vehicle { get; set; }
         public InsurancePayment InsurancePayment { get; set; }
         public string Status { get; set; } = "Open"; // varsayılan
+        public ICollection<RepairJobImage> RepairJobImages { get; set; }
+    = new List<RepairJobImage>();
+
     }
 
 }

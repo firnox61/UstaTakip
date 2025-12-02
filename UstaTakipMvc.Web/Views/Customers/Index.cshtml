@@ -40,7 +40,7 @@
                         foreach (var c in Model)
                         {
                             <tr data-row>
-                                <td data-col>@c.FullName</td>
+                                <td data-col>@c.DisplayName</td>
                                 <td data-col>@c.Phone</td>
                                 <td class="text-end">
                                     <a asp-action="Edit" asp-route-id="@c.Id" class="btn btn-sm btn-outline-secondary">
@@ -50,7 +50,7 @@
                                             data-bs-toggle="modal"
                                             data-bs-target="#confirmDeleteModal"
                                             data-id="@c.Id"
-                                            data-title="@c.FullName">
+                                            data-title="@c.DisplayName">
                                         <i class="fa-regular fa-trash-can"></i>
                                     </button>
                                 </td>

@@ -4,6 +4,17 @@
     ViewData["Title"] = "Tamir/Bakım Kayıtları";
 }
 
+@functions {
+    string SortUrl(string field)
+    {
+        var currentField = ViewBag.SortField as string;
+        var currentOrder = ViewBag.SortOrder as string ?? "asc";
+
+        var nextOrder = (currentField == field && currentOrder == "asc") ? "desc" : "asc";
+
+        return Url.Action("Index", new { sortField = field, sortOrder = nextOrder });
+    }
+}
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="m-0">Tamir/Bakım Kayıtları</h4>
     <a asp-action="Create" class="btn btn-primary">
@@ -14,11 +25,11 @@
 <table class="table table-hover align-middle">
     <thead class="table-light">
         <tr>
-            <th>Plaka</th>
-            <th>İş Açıklaması</th>
-            <th>Fiyat</th>
-            <th>Tarih</th>
-            <th>Durum</th>
+           <th><a href="@SortUrl("Plate")">Plaka</a></th>
+<th><a href="@SortUrl("Description")">İş Açıklaması</a></th>
+<th><a href="@SortUrl("Price")">Fiyat</a></th>
+<th><a href="@SortUrl("Date")">Tarih</a></th>
+<th><a href="@SortUrl("Status")">Durum</a></th>
             <th style="width:140px;"></th>
         </tr>
     </thead>

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UstaTakip.Infrastructure.Persistence.Context;
 
@@ -11,9 +12,11 @@ using UstaTakip.Infrastructure.Persistence.Context;
 namespace UstaTakip.Infrastructure.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20251202114523_CustomerTypeUpdate")]
+    partial class CustomerTypeUpdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -213,29 +216,6 @@ namespace UstaTakip.Infrastructure.Migrations
                     b.ToTable("RepairJobs", (string)null);
                 });
 
-            modelBuilder.Entity("UstaTakip.Domain.Entities.RepairJobImage", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ImagePath")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("RepairJobId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("UploadedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RepairJobId");
-
-                    b.ToTable("RepairJobImages", (string)null);
-                });
-
             modelBuilder.Entity("UstaTakip.Domain.Entities.User", b =>
                 {
                     b.Property<int>("Id")
@@ -393,17 +373,6 @@ namespace UstaTakip.Infrastructure.Migrations
                     b.Navigation("Vehicle");
                 });
 
-            modelBuilder.Entity("UstaTakip.Domain.Entities.RepairJobImage", b =>
-                {
-                    b.HasOne("UstaTakip.Domain.Entities.RepairJob", "RepairJob")
-                        .WithMany("RepairJobImages")
-                        .HasForeignKey("RepairJobId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("RepairJob");
-                });
-
             modelBuilder.Entity("UstaTakip.Domain.Entities.UserOperationClaim", b =>
                 {
                     b.HasOne("UstaTakip.Domain.Entities.OperationClaim", "OperationClaim")
@@ -464,8 +433,6 @@ namespace UstaTakip.Infrastructure.Migrations
                 {
                     b.Navigation("InsurancePayment")
                         .IsRequired();
-
-                    b.Navigation("RepairJobImages");
                 });
 
             modelBuilder.Entity("UstaTakip.Domain.Entities.User", b =>

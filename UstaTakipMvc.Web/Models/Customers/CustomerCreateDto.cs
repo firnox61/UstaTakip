@@ -8,7 +8,18 @@ namespace UstaTakipMvc.Web.Models.Customers
 {
     public class CustomerCreateDto : ICustomerForm
     {
-        public string FullName { get; set; }
-        public string Phone { get; set; }
+        public CustomerType Type { get; set; } = CustomerType.Individual;
+
+        // Bireysel
+        public string? FullName { get; set; }
+        public string? NationalId { get; set; }
+
+        // Tüzel
+        public string? CompanyName { get; set; }
+        public string? TaxNumber { get; set; }
+
+        // Ortak
+        public string Phone { get; set; } = string.Empty;
+        public string Address { get; set; } = string.Empty;
     }
 }

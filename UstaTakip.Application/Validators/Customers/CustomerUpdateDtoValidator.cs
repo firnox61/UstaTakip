@@ -9,10 +9,13 @@ using UstaTakip.Domain.Entities;
 
 namespace UstaTakip.Application.Validators.Customers
 {
-    public class CustomerCreateDtoValidator : AbstractValidator<CustomerCreateDto>
+    public class CustomerUpdateDtoValidator : AbstractValidator<CustomerUpdateDto>
     {
-        public CustomerCreateDtoValidator()
+        public CustomerUpdateDtoValidator()
         {
+            RuleFor(x => x.Id)
+                .NotEmpty().WithMessage("Id boş olamaz.");
+
             // Ortak alanlar
             RuleFor(x => x.Phone)
                 .NotEmpty().WithMessage("Telefon numarası boş olamaz.")
@@ -21,7 +24,7 @@ namespace UstaTakip.Application.Validators.Customers
             RuleFor(x => x.Address)
                 .NotEmpty().WithMessage("Adres boş olamaz.");
 
-            // Bireysel müşteri kuralları
+            // Bireysel kurallar
             When(x => x.Type == CustomerType.Individual, () =>
             {
                 RuleFor(x => x.FullName)
@@ -33,7 +36,7 @@ namespace UstaTakip.Application.Validators.Customers
                     .Length(11).WithMessage("TC Kimlik No 11 haneli olmalıdır.");
             });
 
-            // Tüzel müşteri kuralları
+            // Tüzel kurallar
             When(x => x.Type == CustomerType.Corporate, () =>
             {
                 RuleFor(x => x.CompanyName)
@@ -41,10 +44,9 @@ namespace UstaTakip.Application.Validators.Customers
                     .MaximumLength(150).WithMessage("Şirket ünvanı en fazla 150 karakter olabilir.");
 
                 RuleFor(x => x.TaxNumber)
-                    .NotEmpty().WithMessage("Vergi numarası zorunludur.");
-                    //.Length(10).WithMessage("Vergi numarası 10 haneli olmalıdır.");
+                    .NotEmpty().WithMessage("Vergi numarası zorunludur.")
+                    .Length(10).WithMessage("Vergi numarası 10 haneli olmalıdır.");
             });
         }
     }
-
 }

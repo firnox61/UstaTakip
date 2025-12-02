@@ -1,16 +1,70 @@
 ﻿@using UstaTakipMvc.Web.Models.Customers
-@model ICustomerForm   
+@model ICustomerForm
 
-<div class="row g-3">
-    <div class="col-md-6">
-        <label asp-for="FullName" class="form-label">Ad Soyad</label>
-        <input asp-for="FullName" class="form-control" />
-        <span asp-validation-for="FullName" class="text-danger small"></span>
+<div class="mb-3">
+    <label class="form-label d-block">Müşteri Tipi</label>
+
+    <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" role="switch" id="typeSwitch"
+               @(Model.Type == CustomerType.Corporate ? "checked" : "")>
+        <label class="form-check-label" for="typeSwitch">
+            <span id="typeLabel">
+                @(Model.Type == CustomerType.Corporate ? "Tüzel" : "Bireysel")
+            </span>
+        </label>
     </div>
 
+    <input type="hidden" asp-for="Type" id="typeInput" />
+</div>
+
+<hr />
+
+<!-- Bireysel Alanlar -->
+<div id="individualFields">
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label asp-for="FullName" class="form-label">Ad Soyad</label>
+            <input asp-for="FullName" class="form-control" />
+            <span asp-validation-for="FullName" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="NationalId" class="form-label">TC Kimlik No</label>
+            <input asp-for="NationalId" class="form-control" />
+            <span asp-validation-for="NationalId" class="text-danger small"></span>
+        </div>
+    </div>
+</div>
+
+<!-- Tüzel Alanlar -->
+<div id="corporateFields">
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label asp-for="CompanyName" class="form-label">Şirket Ünvanı</label>
+            <input asp-for="CompanyName" class="form-control" />
+            <span asp-validation-for="CompanyName" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="TaxNumber" class="form-label">Vergi No</label>
+            <input asp-for="TaxNumber" class="form-control" />
+            <span asp-validation-for="TaxNumber" class="text-danger small"></span>
+        </div>
+    </div>
+</div>
+
+<hr />
+
+<div class="row g-3">
     <div class="col-md-6">
         <label asp-for="Phone" class="form-label">Telefon</label>
         <input asp-for="Phone" class="form-control" />
         <span asp-validation-for="Phone" class="text-danger small"></span>
+    </div>
+
+    <div class="col-md-6">
+        <label asp-for="Address" class="form-label">Adres</label>
+        <input asp-for="Address" class="form-control" />
+        <span asp-validation-for="Address" class="text-danger small"></span>
     </div>
 </div>

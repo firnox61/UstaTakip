@@ -69,10 +69,16 @@ namespace UstaTakip.Application.Services.Managers
         [CacheRemoveAspect("ICustomerService.Get*")]
         public async Task<IResult> UpdateAsync(CustomerUpdateDto dto)
         {
-            var customer = _mapper.Map<Customer>(dto);
-            await _customerDal.UpdateAsync(customer);
+            var existing = await _customerDal.GetAsync(x => x.Id == dto.Id);
+            if (existing == null)
+                return new ErrorResult("Müşteri bulunamadı.");
+
+            _mapper.Map(dto, existing);
+
+            await _customerDal.UpdateAsync(existing);
             return new SuccessResult("Müşteri güncellendi.");
         }
+
     }
 
 

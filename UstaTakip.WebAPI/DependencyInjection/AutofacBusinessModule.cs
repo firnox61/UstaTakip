@@ -37,6 +37,7 @@ namespace UstaTakip.WebAPI.DependencyInjection
             builder.RegisterType<EfCustomerDal>().As<ICustomerDal>();
             builder.RegisterType<EfVehicleDal>().As<IVehicleDal>();
             builder.RegisterType<EfVehicleImageDal>().As<IVehicleImageDal>();
+            builder.RegisterType<EfRepairJobImageDal>().As<IRepairJobImageDal>();
             builder.RegisterType<EfRepairJobDal>().As<IRepairJobDal>();
             builder.RegisterType<EfInsurancePaymentDal>().As<IInsurancePaymentDal>();
             builder.RegisterType<EfInsurancePolicyDal>().As<IInsurancePolicyDal>();

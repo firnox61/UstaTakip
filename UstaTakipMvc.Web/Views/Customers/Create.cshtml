@@ -34,4 +34,29 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const typeSwitch = document.getElementById("typeSwitch");
+            const typeInput = document.getElementById("typeInput");
+            const typeLabel = document.getElementById("typeLabel");
+
+            const individualFields = document.getElementById("individualFields");
+            const corporateFields = document.getElementById("corporateFields");
+
+            function refreshVisibility() {
+                const isCorporate = typeSwitch.checked;
+
+                typeInput.value = isCorporate ? 2 : 1;
+                typeLabel.textContent = isCorporate ? "Tüzel" : "Bireysel";
+
+                individualFields.style.display = isCorporate ? "none" : "";
+                corporateFields.style.display = isCorporate ? "" : "none";
+            }
+
+            typeSwitch.addEventListener("change", refreshVisibility);
+            refreshVisibility();
+        });
+    </script>
 }

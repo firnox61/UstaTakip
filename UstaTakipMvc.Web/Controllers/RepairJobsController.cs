@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Text.Json;
+using UstaTakipMvc.Web.Models.RepairJobImages;
 using UstaTakipMvc.Web.Models.RepairJobs;
 using UstaTakipMvc.Web.Models.Shared;
 using UstaTakipMvc.Web.Models.Vehicles;
@@ -25,7 +26,7 @@ namespace UstaTakipMvc.Web.Controllers
 
         // -------- LIST --------
         [HttpGet]
-        public async Task<IActionResult> Index(CancellationToken ct)
+        public async Task<IActionResult> Index(string sortField, string sortOrder = "asc", CancellationToken ct = default)
         {
             var resp = await _api.GetAsync("repairjobs", ct);
             if (!resp.IsSuccessStatusCode)
@@ -35,8 +36,51 @@ namespace UstaTakipMvc.Web.Controllers
             }
 
             var wrap = await resp.Content.ReadFromJsonAsync<ApiDataResult<List<RepairJobListDto>>>(_json, ct);
-            return View(wrap?.Data ?? new());
+            var data = wrap?.Data ?? new List<RepairJobListDto>();
+
+            // -------- STATUS özel sıralama fonksiyonu --------
+            int StatusRank(string s) => s switch
+            {
+                "Open" => 1,
+                "InProgress" => 2,
+                "Completed" => 3,
+                "Cancelled" => 4,
+                _ => 99
+            };
+
+            // -------- Sıralama işlemi --------
+            data = sortField switch
+            {
+                "Plate" => sortOrder == "asc"
+                    ? data.OrderBy(x => x.VehiclePlate).ToList()
+                    : data.OrderByDescending(x => x.VehiclePlate).ToList(),
+
+                "Description" => sortOrder == "asc"
+                    ? data.OrderBy(x => x.Description).ToList()
+                    : data.OrderByDescending(x => x.Description).ToList(),
+
+                "Price" => sortOrder == "asc"
+                    ? data.OrderBy(x => x.Price).ToList()
+                    : data.OrderByDescending(x => x.Price).ToList(),
+
+                "Date" => sortOrder == "asc"
+                    ? data.OrderBy(x => x.Date).ToList()
+                    : data.OrderByDescending(x => x.Date).ToList(),
+
+                "Status" => sortOrder == "asc"
+                    ? data.OrderBy(x => StatusRank(x.Status)).ToList()
+                    : data.OrderByDescending(x => StatusRank(x.Status)).ToList(),
+
+                _ => data
+            };
+
+            // -------- ViewBag ile mevcut sıralamayı taşıyalım --------
+            ViewBag.SortField = sortField;
+            ViewBag.SortOrder = sortOrder;
+
+            return View(data);
         }
+
 
         // -------- CREATE (GET) --------
         [HttpGet]
@@ -79,6 +123,7 @@ namespace UstaTakipMvc.Web.Controllers
         public async Task<IActionResult> Edit(Guid id, CancellationToken ct)
         {
             var resp = await _api.GetAsync($"repairjobs/{id}", ct);
+
             if (!resp.IsSuccessStatusCode)
             {
                 TempData["Error"] = await ReadApiErrorAsync(resp, ct);
@@ -87,14 +132,31 @@ namespace UstaTakipMvc.Web.Controllers
 
             var wrap = await resp.Content.ReadFromJsonAsync<ApiDataResult<RepairJobUpdateDto>>(_json, ct);
             var model = wrap?.Data;
+
             if (model is null)
             {
                 TempData["Error"] = wrap?.Message ?? "Kayıt bulunamadı.";
                 return RedirectToAction(nameof(Index));
             }
 
+            // Araç listesi
             await LoadVehicleOptionsAsync(ct, model.VehicleId);
+
+            // Status listesi
             ViewBag.StatusOptions = BuildStatusOptions(model.Status);
+
+            // --- REPAIR JOB IMAGES (Galeri) ---
+            var imgResp = await _api.GetAsync($"repairjobimages/by-repair/{id}", ct);
+            if (imgResp.IsSuccessStatusCode)
+            {
+                var wrapImages = await imgResp.Content.ReadFromJsonAsync<List<RepairJobImageListDto>>(_json, ct);
+                ViewBag.RepairJobImages = wrapImages ?? new();
+            }
+            else
+            {
+                ViewBag.RepairJobImages = new List<RepairJobImageListDto>();
+            }
+
 
             return View(model);
         }
@@ -111,7 +173,6 @@ namespace UstaTakipMvc.Web.Controllers
                 return View(dto);
             }
 
-            // API'de PUT /repairjobs şeklinde kullanıyorum
             var resp = await _api.PutAsJsonAsync("repairjobs", dto, _json, ct);
 
             if (!resp.IsSuccessStatusCode)
@@ -126,8 +187,7 @@ namespace UstaTakipMvc.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-
-
+        // -------- DELETE --------
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
