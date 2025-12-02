@@ -1,0 +1,48 @@
+﻿<nav class="navbar navbar-expand navbar-dark bg-dark shadow-sm">
+    <div class="container-fluid">
+        <button class="btn btn-sm btn-outline-light me-2" id="sidebarToggle">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+
+        <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">
+            <i class="fa-solid fa-screwdriver-wrench me-2"></i>UstaTakip
+        </a>
+
+        <ul class="navbar-nav ms-auto align-items-center">
+            @if (User.Identity?.IsAuthenticated ?? false)
+            {
+                <li class="nav-item me-3 text-light">
+                    <i class="fa-solid fa-user-circle me-1"></i>
+                    Hoş geldin, @User.Identity.Name
+                </li>
+                <li class="nav-item">
+                    <form asp-action="Logout" asp-controller="Auth" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-sm btn-outline-light">
+                            <i class="fa-solid fa-right-from-bracket"></i> Çıkış
+                        </button>
+                    </form>
+                </li>
+                <li class="nav-item">
+                    <button id="themeToggle" class="btn btn-sm btn-outline-light ms-2">
+                        <i id="themeIcon" class="fa-solid fa-moon"></i>
+                    </button>
+                </li>
+
+            }
+            else
+            {
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Auth" asp-action="Login">
+                        <i class="fa-solid fa-right-to-bracket me-1"></i> Giriş
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Auth" asp-action="Register">
+                        <i class="fa-solid fa-user-plus me-1"></i> Kayıt Ol
+                    </a>
+                </li>
+            }
+        </ul>
+    </div>
+</nav>

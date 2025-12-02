@@ -1,0 +1,47 @@
+﻿<aside class="app-sidebar border-end">
+    <div class="list-group list-group-flush">
+
+        <a class="list-group-item list-group-item-action @(ViewData["ActiveMenu"] as string == "Dashboard" ? "active" : "")"
+           asp-controller="Home" asp-action="Index"
+           title="Dashboard">
+            <i class="fa-solid fa-gauge me-2"></i>
+            <span class="menu-text">Dashboard</span>
+        </a>
+
+        <a class="list-group-item list-group-item-action @(ViewData["ActiveMenu"] as string == "Customers" ? "active" : "")"
+           asp-controller="Customers" asp-action="Index"
+           title="Müşteriler">
+            <i class="fa-solid fa-users me-2"></i>
+            <span class="menu-text">Müşteriler</span>
+        </a>
+
+        <a class="list-group-item list-group-item-action @(ViewData["ActiveMenu"] as string == "Vehicles" ? "active" : "")"
+           asp-controller="Vehicles" asp-action="Index"
+           title="Araçlar">
+            <i class="fa-solid fa-car-side me-2"></i>
+            <span class="menu-text">Araçlar</span>
+        </a>
+
+        <a class="list-group-item list-group-item-action @(ViewData["ActiveMenu"] as string == "InsurancePolicies" ? "active" : "")"
+           asp-controller="InsurancePolicies" asp-action="Index"
+           title="Poliçeler">
+            <i class="fa-solid fa-file-shield me-2"></i>
+            <span class="menu-text">Poliçeler</span>
+        </a>
+
+        <a class="list-group-item list-group-item-action @(ViewData["ActiveMenu"] as string == "InsurancePayments" ? "active" : "")"
+           asp-controller="InsurancePayments" asp-action="Index"
+           title="Ödemeler">
+            <i class="fa-solid fa-receipt me-2"></i>
+            <span class="menu-text">Ödemeler</span>
+        </a>
+
+        <a class="list-group-item list-group-item-action @(ViewData["ActiveMenu"] as string == "RepairJobs" ? "active" : "")"
+           asp-controller="RepairJobs" asp-action="Index"
+           title="Tamir / Bakım">
+            <i class="fa-solid fa-screwdriver-wrench me-2"></i>
+            <span class="menu-text">Tamir / Bakım</span>
+        </a>
+
+    </div>
+</aside>

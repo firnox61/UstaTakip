@@ -8,14 +8,17 @@ namespace UstaTakipMvc.Web.Models.Dashboards
     {
         // Sayaçlar
         public int VehicleCount { get; set; }
-        public int ActivePolicyCount { get; set; }
-        public int PoliciesExpiringSoonCount { get; set; }
+        public int CustomerCount { get; set; }
         public int OpenRepairCount { get; set; }
-        public int DuePaymentCount { get; set; }
+        public int InProgressRepairCount { get; set; }
+        public int ExpiringPolicyCount { get; set; }
 
-        // Listeler (kart altı tablolar)
+        // Listeler
         public List<VehicleListDto> RecentVehicles { get; set; } = new();
         public List<InsurancePolicyListDto> ExpiringPolicies { get; set; } = new();
         public List<RepairJobListDto> RecentRepairs { get; set; } = new();
+
+        // Grafik verisi
+        public List<MonthlyRepairJobDto> MonthlyStats { get; set; } = new();
     }
 }

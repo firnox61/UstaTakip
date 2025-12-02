@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Text.Json;
 using UstaTakipMvc.Web.Models;
+using UstaTakipMvc.Web.Models.Customers;
 using UstaTakipMvc.Web.Models.Dashboards;
 using UstaTakipMvc.Web.Models.InsurancePolicies;
 using UstaTakipMvc.Web.Models.RepairJobs;
@@ -26,40 +27,66 @@ public class HomeController : Controller
         _api = factory.CreateClient("UstaApi");
         _api.DefaultRequestHeaders.Accept.ParseAdd("application/json");
     }
-
     public async Task<IActionResult> Index(CancellationToken ct = default)
     {
         var vm = new DashboardViewModel();
 
         try
         {
-            // Son 5 araç (API’de özel endpoint yoksa normal listeyi kullanýyoruz)
+            // =============================
+            // 1) Araçlar
+            // =============================
             var vehicleResp = await GetApiResponse<List<VehicleListDto>>("vehicles", ct);
-            vm.RecentVehicles = (vehicleResp?.Data ?? new()).OrderByDescending(v => v.Id).Take(5).ToList();
             vm.VehicleCount = vehicleResp?.Data?.Count ?? 0;
+            vm.RecentVehicles = vehicleResp?.Data?
+                .OrderByDescending(v => v.Id)
+                .Take(5)
+                .ToList() ?? new();
 
-            // Yakýnda bitecek poliçeler
-            var policyResp = await GetApiResponse<List<InsurancePolicyListDto>>("insurancepolicies/expiring?days=30&take=5", ct);
-            vm.ExpiringPolicies = policyResp?.Data ?? new();
-            vm.PoliciesExpiringSoonCount = vm.ExpiringPolicies.Count;
 
-            // Son 5 tamir kaydý
-            var repairResp = await GetApiResponse<List<RepairJobListDto>>("repairjobs/recent?take=5", ct);
-            vm.RecentRepairs = repairResp?.Data ?? new();
-            vm.OpenRepairCount = vm.RecentRepairs.Count(r => r.Status?.Equals("Open", StringComparison.OrdinalIgnoreCase) == true);
+            // =============================
+            // 2) Müþteriler
+            // =============================
+            var customerResp = await GetApiResponse<List<CustomerListDto>>("customers", ct);
+            vm.CustomerCount = customerResp?.Data?.Count ?? 0;
 
-            // Aktif poliçe sayýsý
-            var activeCountResp = await GetApiResponse<int>("insurancepolicies/active/count", ct);
-            vm.ActivePolicyCount = activeCountResp?.Data ?? 0;
-        }
-        catch (HttpRequestException ex)
-        {
-            _logger.LogError(ex, "Dashboard verileri alýnamadý (HTTP).");
-            TempData["Error"] = "API baðlantý hatasý.";
+
+            // =============================
+            // 3) Tamir Ýþleri (Open + InProgress + Completed)
+            // =============================
+            var repairResp = await GetApiResponse<List<RepairJobListDto>>("repairjobs", ct);
+
+            var repairs = repairResp?.Data ?? new List<RepairJobListDto>();
+
+            vm.OpenRepairCount = repairs.Count(r => r.Status == "Open");
+            vm.InProgressRepairCount = repairs.Count(r => r.Status == "InProgress");
+
+            vm.RecentRepairs = repairs
+                .OrderByDescending(r => r.Date)
+                .Take(5)
+                .ToList();
+
+
+            // =============================
+            // 4) Yaklaþan Poliçeler (30 gün)
+            // =============================
+            var expiringResp = await GetApiResponse<List<InsurancePolicyListDto>>("insurancepolicies/expiring?days=30&take=5", ct);
+
+            vm.ExpiringPolicies = expiringResp?.Data ?? new();
+            vm.ExpiringPolicyCount = vm.ExpiringPolicies.Count;
+
+
+            // =============================
+            // 5) Aylýk Tamir Ýstatistikleri (Grafik)
+            // =============================
+            var monthlyResp = await GetApiResponse<List<MonthlyRepairJobDto>>(
+      "repairjobs/GetJobMonthly", ct);
+
+            vm.MonthlyStats = monthlyResp?.Data ?? new();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Dashboard verileri alýnamadý.");
+            _logger.LogError(ex, "Dashboard verileri çekilirken hata oluþtu.");
             TempData["Error"] = "Dashboard verileri alýnýrken bir hata oluþtu.";
         }
 

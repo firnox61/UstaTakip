@@ -126,6 +126,26 @@ namespace UstaTakipMvc.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
+        {
+            var resp = await _api.DeleteAsync($"repairjobs/{id}", ct);
+
+            if (!resp.IsSuccessStatusCode)
+            {
+                TempData["Error"] = await ReadApiErrorAsync(resp, ct);
+            }
+            else
+            {
+                TempData["Success"] = "Kayıt başarıyla silindi.";
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
         // -------- helpers --------
 
         private async Task LoadVehicleOptionsAsync(CancellationToken ct, Guid? selectedId = null)

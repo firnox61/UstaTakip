@@ -70,6 +70,8 @@ namespace UstaTakipMvc.Web.Controllers
         public async Task<IActionResult> Create(CancellationToken ct)
         {
             await FillCustomersAsync(ct);
+            ViewBag.Brands = VehicleBrands.All; // marka listesi
+            ViewBag.Models = VehicleModels.Models;
             return View(new VehicleCreateDto());
         }
 
@@ -78,9 +80,16 @@ namespace UstaTakipMvc.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(VehicleCreateDto dto, CancellationToken ct)
         {
+            // Manuel giriş kontrolü
+            var form = Request.Form;
+            dto.Brand = !string.IsNullOrWhiteSpace(form["Brand"]) ? form["Brand"] : form["brandSelect"];
+            dto.Model = !string.IsNullOrWhiteSpace(form["Model"]) ? form["Model"] : form["modelSelect"];
+
             if (!ModelState.IsValid)
             {
                 await FillCustomersAsync(ct);
+                ViewBag.Brands = VehicleBrands.All;
+                ViewBag.Models = VehicleModels.Models;
                 return View(dto);
             }
 
@@ -90,6 +99,8 @@ namespace UstaTakipMvc.Web.Controllers
             if (!resp.IsSuccessStatusCode)
             {
                 await FillCustomersAsync(ct);
+                ViewBag.Brands = VehicleBrands.All;
+                ViewBag.Models = VehicleModels.Models;
                 ViewBag.Error = await ReadApiErrorAsync(resp, ct);
                 return View(dto);
             }
@@ -102,6 +113,8 @@ namespace UstaTakipMvc.Web.Controllers
             if (result?.Success != true)
             {
                 await FillCustomersAsync(ct);
+                ViewBag.Brands = VehicleBrands.All;
+                ViewBag.Models = VehicleModels.Models;
                 ViewBag.Error = result?.Message ?? "Araç eklenemedi.";
                 return View(dto);
             }
@@ -109,6 +122,7 @@ namespace UstaTakipMvc.Web.Controllers
             TempData["Success"] = "Araç başarıyla eklendi.";
             return RedirectToAction(nameof(Index));
         }
+
 
         // EDIT (GET)
         [HttpGet]
@@ -135,7 +149,8 @@ namespace UstaTakipMvc.Web.Controllers
             // 3) Resimler
             var images = await GetVehicleImagesAsync(id, ct);
             ViewBag.VehicleImages = images;
-
+            ViewBag.Brands = VehicleBrands.All; // marka listesi
+            ViewBag.Models = VehicleModels.Models; // marka-model eşlemesi
             return View(wrapper.Data);
         }
 
@@ -144,9 +159,15 @@ namespace UstaTakipMvc.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(VehicleUpdateDto dto, CancellationToken ct)
         {
+            var form = Request.Form;
+            dto.Brand = !string.IsNullOrWhiteSpace(form["Brand"]) ? form["Brand"] : form["brandSelect"];
+            dto.Model = !string.IsNullOrWhiteSpace(form["Model"]) ? form["Model"] : form["modelSelect"];
+
             if (!ModelState.IsValid)
             {
                 await FillCustomersAsync(ct);
+                ViewBag.Brands = VehicleBrands.All;
+                ViewBag.Models = VehicleModels.Models;
                 return View(dto);
             }
 
@@ -156,6 +177,8 @@ namespace UstaTakipMvc.Web.Controllers
             if (!resp.IsSuccessStatusCode)
             {
                 await FillCustomersAsync(ct);
+                ViewBag.Brands = VehicleBrands.All;
+                ViewBag.Models = VehicleModels.Models;
                 ViewBag.Error = await ReadApiErrorAsync(resp, ct);
                 return View(dto);
             }
@@ -168,6 +191,8 @@ namespace UstaTakipMvc.Web.Controllers
             if (result?.Success != true)
             {
                 await FillCustomersAsync(ct);
+                ViewBag.Brands = VehicleBrands.All;
+                ViewBag.Models = VehicleModels.Models;
                 ViewBag.Error = result?.Message ?? "Güncelleme başarısız.";
                 return View(dto);
             }
@@ -175,6 +200,7 @@ namespace UstaTakipMvc.Web.Controllers
             TempData["Success"] = "Araç güncellendi.";
             return RedirectToAction(nameof(Index));
         }
+
 
         // DELETE
         [HttpPost]

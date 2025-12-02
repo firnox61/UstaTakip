@@ -43,13 +43,17 @@
                     <a asp-action="Edit" asp-route-id="@x.Id" class="btn btn-sm btn-outline-secondary">
                         <i class="fa fa-pen"></i>
                     </a>
-                    <form asp-action="Delete" asp-route-id="@x.Id" method="post" class="d-inline">
-                        @Html.AntiForgeryToken()
-                        <button type="submit" class="btn btn-sm btn-outline-danger" 
-                                onclick="return confirm('Silinsin mi?')">
-                            <i class="fa fa-trash"></i>
-                        </button>
-                    </form>
+                   <form asp-action="Delete" method="post" class="d-inline">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="id" value="@x.Id" />
+
+    <button type="submit"
+            class="btn btn-sm btn-outline-danger"
+            onclick="return confirm('Silinsin mi?')">
+        <i class="fa fa-trash"></i>
+    </button>
+</form>
+
                 </td>
             </tr>
         }

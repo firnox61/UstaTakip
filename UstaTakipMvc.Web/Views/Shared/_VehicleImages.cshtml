@@ -1,0 +1,85 @@
+﻿@model List<UstaTakipMvc.Web.Models.VehicleImages.VehicleImageListDto>
+@inject IConfiguration Config
+
+@{
+    Guid vehicleId = ViewBag.VehicleId is Guid g ? g : Guid.Empty;
+
+    string apiBase = Config["ApiSettings:BaseUrl"]?.TrimEnd('/') ?? "";
+
+    // Eğer API url'inde "/api" varsa kaldır → çünkü ImagePath genelde /uploads ile gelir
+    if (apiBase.EndsWith("/api", StringComparison.OrdinalIgnoreCase))
+    {
+        apiBase = apiBase[..^4]; // "/api" kaldır
+    }
+}
+
+<hr />
+<h5 class="mt-4">Resimler</h5>
+
+<form asp-action="UploadImage" method="post" enctype="multipart/form-data" class="row g-2">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="vehicleId" value="@vehicleId" />
+
+    <div class="col-md-8">
+        <input name="imageFile" type="file" accept="image/*" class="form-control" required />
+        <div class="form-text">PNG / JPEG / WEBP / GIF — Max 5MB</div>
+    </div>
+
+    <div class="col-md-4 d-grid">
+        <button type="submit" class="btn btn-outline-primary">
+            <i class="fa-solid fa-upload me-1"></i> Yükle
+        </button>
+    </div>
+</form>
+
+@if (Model.Any())
+{
+    <div class="row row-cols-2 row-cols-md-4 row-cols-xl-6 g-3 mt-2">
+
+        @foreach (var img in Model)
+        {
+            // Normalize edilmiş full URL
+            string path = img.ImagePath?.Trim() ?? "";
+
+            if (!path.StartsWith("/"))
+                path = "/" + path;
+
+            string fullSrc = apiBase + path;
+
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="ratio ratio-1x1">
+                        <img src="@fullSrc"
+                             class="img-fluid w-100 h-100"
+                             style="object-fit:cover"
+                             loading="lazy"
+                             onerror="this.src='/images/no-image.png'" />
+                    </div>
+
+                    <div class="card-body p-2">
+                        <small class="text-muted">
+                            @img.UploadedAt.ToString("dd.MM.yyyy HH:mm")
+                        </small>
+
+                        <form asp-action="DeleteImage" method="post" class="mt-2">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@img.Id" />
+                            <input type="hidden" name="vehicleId" value="@vehicleId" />
+
+                            <button type="submit"
+                                    class="btn btn-sm btn-outline-danger w-100"
+                                    onclick="return confirm('Resmi silmek istiyor musun?')">
+                                Sil
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+
+    </div>
+}
+else
+{
+    <div class="alert alert-info mt-3">Bu araca ait resim bulunmuyor.</div>
+}

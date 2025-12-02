@@ -76,5 +76,14 @@ namespace UstaTakip.WebAPI.Controllers
                 return Ok(result);
             return BadRequest(result);
         }
+
+        [HttpGet("GetJobMonthly")]
+        public async Task<IActionResult> GetJobMonthly()
+        {
+            var result = await _repairJobService.GetMonthlyStatsAsync();
+            if (result.Success)
+                return Ok(result);
+            return BadRequest(result);
+        }
     }
 }

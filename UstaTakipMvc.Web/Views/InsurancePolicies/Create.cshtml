@@ -17,9 +17,11 @@
     @Html.AntiForgeryToken()
 
     <div class="row g-3">
-        <div class="col-md-6">
+        <div class="mb-3">
             <label asp-for="CompanyName" class="form-label">Şirket</label>
-            <input asp-for="CompanyName" class="form-control" />
+            <select asp-for="CompanyName" class="form-select" asp-items="@(new SelectList(ViewBag.Companies))">
+                <option value="">Seçiniz...</option>
+            </select>
             <span asp-validation-for="CompanyName" class="text-danger"></span>
         </div>
 

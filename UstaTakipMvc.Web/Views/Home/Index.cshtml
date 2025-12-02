@@ -5,7 +5,8 @@
 }
 
 <div class="row g-3">
-    <!-- Sayaçlar -->
+
+    <!-- 🔵 Araç Sayısı -->
     <div class="col-md-3">
         <div class="card shadow-sm border-0">
             <div class="card-body d-flex align-items-center">
@@ -17,149 +18,225 @@
             </div>
         </div>
     </div>
+
+    <!-- 🟢 Müşteri Sayısı -->
     <div class="col-md-3">
         <div class="card shadow-sm border-0">
             <div class="card-body d-flex align-items-center">
-                <i class="fa-solid fa-shield-halved fa-2x text-success me-3"></i>
+                <i class="fa-solid fa-users fa-2x text-success me-3"></i>
                 <div>
-                    <div class="text-muted small">Aktif Poliçe</div>
-                    <div class="h4 m-0">@Model.ActivePolicyCount</div>
+                    <div class="text-muted small">Müşteri Sayısı</div>
+                    <div class="h4 m-0">@Model.CustomerCount</div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- 🟠 Açık & Devam Eden Tamir -->
     <div class="col-md-3">
         <div class="card shadow-sm border-0">
             <div class="card-body d-flex align-items-center">
-                <i class="fa-solid fa-hourglass-half fa-2x text-warning me-3"></i>
+                <i class="fa-solid fa-wrench fa-2x text-warning me-3"></i>
                 <div>
-                    <div class="text-muted small">Yakında Bitecek</div>
-                    <div class="h4 m-0">@Model.PoliciesExpiringSoonCount</div>
-                    <div class="small text-muted">30 gün içinde</div>
+                    <div class="text-muted small">Açık / Devam Eden</div>
+                    <div class="h4 m-0">
+                        @(Model.OpenRepairCount + Model.InProgressRepairCount)
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- 🔴 Yaklaşan Poliçeler -->
     <div class="col-md-3">
         <div class="card shadow-sm border-0">
             <div class="card-body d-flex align-items-center">
-                <i class="fa-solid fa-wrench fa-2x text-danger me-3"></i>
+                <i class="fa-solid fa-file-shield fa-2x text-danger me-3"></i>
                 <div>
-                    <div class="text-muted small">Açık Tamir</div>
-                    <div class="h4 m-0">@Model.OpenRepairCount</div>
+                    <div class="text-muted small">Yaklaşan Poliçeler</div>
+                    <div class="h4 m-0">@Model.ExpiringPolicyCount</div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Listeler -->
+<!-- ==========================
+    📊 GRAFİK ALANI
+========================== -->
 <div class="row g-3 mt-1">
-    <!-- Araçlar -->
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white">
+                <i class="fa-solid fa-chart-line me-2"></i>Aylık Tamir Durumu (Open / InProgress / Completed)
+            </div>
+            <div class="card-body">
+                <canvas id="repairChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==========================
+    TABLOLAR
+========================== -->
+<div class="row g-3 mt-1">
+
+    <!-- 🔵 Son Eklenen Araçlar -->
     <div class="col-lg-6">
         <div class="card shadow-sm border-0 h-100">
             <div class="card-header bg-white">
                 <i class="fa-solid fa-car-side me-2"></i>Son Eklenen Araçlar
-                <a href="/Vehicles" class="float-end small text-decoration-none">Tümü</a>
+                <a href="/Vehicles" class="float-end small">Tümü</a>
             </div>
             <div class="card-body p-0">
                 <table class="table table-hover m-0">
                     <thead class="table-light">
                         <tr>
-                            <th>Plaka</th><th>Marka/Model</th><th>Yıl</th>
+                            <th>Plaka</th>
+                            <th>Marka/Model</th>
+                            <th>Yıl</th>
                         </tr>
                     </thead>
                     <tbody>
-                    @foreach (var v in Model.RecentVehicles)
-                    {
-                        <tr>
-                            <td>@v.Plate</td>
-                            <td>@v.Brand @v.Model</td>
-                            <td>@v.Year</td>
-                        </tr>
-                    }
-                    @if (!Model.RecentVehicles.Any())
-                    {
-                        <tr><td colspan="3" class="text-muted small p-3">Kayıt yok</td></tr>
-                    }
+                        @foreach (var v in Model.RecentVehicles)
+                        {
+                            <tr>
+                                <td>@v.Plate</td>
+                                <td>@v.Brand @v.Model</td>
+                                <td>@v.Year</td>
+                            </tr>
+                        }
+                        @if (!Model.RecentVehicles.Any())
+                        {
+                            <tr><td colspan="3" class="text-muted small p-3">Kayıt yok</td></tr>
+                        }
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- Poliçeler -->
+    <!-- 🟧 Yaklaşan Poliçeler -->
     <div class="col-lg-6">
         <div class="card shadow-sm border-0 h-100">
             <div class="card-header bg-white">
-                <i class="fa-solid fa-file-shield me-2"></i>Yakında Sona Eren Poliçeler (30g)
-                <a href="/InsurancePolicies" class="float-end small text-decoration-none">Tümü</a>
+                <i class="fa-solid fa-file-shield me-2"></i>Yaklaşan Poliçeler (30 gün)
+                <a href="/InsurancePolicies" class="float-end small">Tümü</a>
             </div>
             <div class="card-body p-0">
                 <table class="table table-hover m-0">
                     <thead class="table-light">
                         <tr>
-                            <th>Şirket</th><th>Poliçe No</th><th>Bitiş</th>
+                            <th>Şirket</th>
+                            <th>Poliçe No</th>
+                            <th>Bitiş</th>
                         </tr>
                     </thead>
                     <tbody>
-                    @foreach (var p in Model.ExpiringPolicies)
-                    {
-                        <tr>
-                            <td>@p.CompanyName</td>
-                            <td>@p.PolicyNumber</td>
-                            <td>@p.EndDate.ToString("dd.MM.yyyy")</td>
-                        </tr>
-                    }
-                    @if (!Model.ExpiringPolicies.Any())
-                    {
-                        <tr><td colspan="3" class="text-muted small p-3">Yakında süresi dolan poliçe yok</td></tr>
-                    }
+                        @foreach (var p in Model.ExpiringPolicies)
+                        {
+                            <tr>
+                                <td>@p.CompanyName</td>
+                                <td>@p.PolicyNumber</td>
+                                <td>@p.EndDate.ToString("dd.MM.yyyy")</td>
+                            </tr>
+                        }
+                        @if (!Model.ExpiringPolicies.Any())
+                        {
+                            <tr><td colspan="3" class="text-muted small p-3">Yaklaşan poliçe yok</td></tr>
+                        }
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- Tamirler -->
+    <!-- 🛠 Son Tamir Kayıtları -->
     <div class="col-12">
         <div class="card shadow-sm border-0">
             <div class="card-header bg-white">
                 <i class="fa-solid fa-screwdriver-wrench me-2"></i>Son Tamir/Bakım Kayıtları
-                <a href="/RepairJobs" class="float-end small text-decoration-none">Tümü</a>
+                <a href="/RepairJobs" class="float-end small">Tümü</a>
             </div>
             <div class="card-body p-0">
                 <table class="table table-hover m-0">
                     <thead class="table-light">
                         <tr>
-                            <th>Açıklama</th><th>Plaka</th><th>Durum</th><th>Tarih</th>
+                            <th>Açıklama</th>
+                            <th>Plaka</th>
+                            <th>Durum</th>
+                            <th>Tarih</th>
                         </tr>
                     </thead>
                     <tbody>
-                    @foreach (var r in Model.RecentRepairs)
-                    {
-                        <tr>
-                            <td>@r.Description</td>
-                            <td>@r.VehiclePlate</td>
-                            <td>
-                                <span class="badge bg-@(r.Status?.ToLower() switch {
-                                    "open" => "danger",
-                                    "inprogress" => "warning",
-                                    "completed" => "success",
-                                    "cancelled" => "secondary",
-                                    _ => "secondary"
-                                })">@r.Status</span>
-                            </td>
-                            <td>@r.Date.ToString("dd.MM.yyyy")</td>
-                        </tr>
-                    }
-                    @if (!Model.RecentRepairs.Any())
-                    {
-                        <tr><td colspan="4" class="text-muted small p-3">Kayıt yok</td></tr>
-                    }
+                        @foreach (var r in Model.RecentRepairs)
+                        {
+                            <tr>
+                                <td>@r.Description</td>
+                                <td>@r.VehiclePlate</td>
+                                <td>
+                                    <span class="badge bg-@(r.Status.ToLower())">@r.Status</span>
+                                </td>
+                                <td>@r.Date.ToString("dd.MM.yyyy")</td>
+                            </tr>
+                        }
+                        @if (!Model.RecentRepairs.Any())
+                        {
+                            <tr><td colspan="4" class="text-muted small p-3">Kayıt yok</td></tr>
+                        }
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 </div>
+<p class="text-muted small">
+    Debug: Aylık istatistik kayıt sayısı = @Model.MonthlyStats.Count
+</p>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // Etiketler (Ay isimleri)
+        const labels = @Html.Raw(Json.Serialize(Model.MonthlyStats.Select(x => x.MonthName)));
+
+        const openData = @Html.Raw(Json.Serialize(Model.MonthlyStats.Select(x => x.Open)));
+        const progressData = @Html.Raw(Json.Serialize(Model.MonthlyStats.Select(x => x.InProgress)));
+        const completedData = @Html.Raw(Json.Serialize(Model.MonthlyStats.Select(x => x.Completed)));
+
+        const ctx = document.getElementById('repairChart');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Open',
+                        data: openData,
+                        borderWidth: 2,
+                        borderColor: '#ef4444',
+                        tension: 0.3
+                    },
+                    {
+                        label: 'InProgress',
+                        data: progressData,
+                        borderWidth: 2,
+                        borderColor: '#f59e0b',
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Completed',
+                        data: completedData,
+                        borderWidth: 2,
+                        borderColor: '#10b981',
+                        tension: 0.3
+                    }
+                ]
+            }
+        });
+    </script>
+}
+

@@ -1,9 +1,10 @@
 ﻿@using Microsoft.AspNetCore.Mvc.Rendering
 @using UstaTakipMvc.Web.Models.Vehicles
-@model IVehicleForm  
+@model IVehicleForm
 
 @{
     var customers = ViewBag.Customers as List<SelectListItem> ?? new();
+    var brands = ViewBag.Brands as List<string> ?? new();
 }
 
 <div class="row g-3">
@@ -28,19 +29,43 @@
     </div>
 
     <div class="col-md-6">
-        <label asp-for="Brand" class="form-label">Marka</label>
-        <input asp-for="Brand" class="form-control" />
+        <label class="form-label">Marka</label>
+        <select id="brandSelect" class="form-select">
+            <option value="">Marka seçin</option>
+            @foreach (var b in brands)
+            {
+                <option value="@b">@b</option>
+            }
+        </select>
+
+        <input type="text"
+               id="brandManual"
+               name="Brand"
+               placeholder="Marka listede yoksa yazın"
+               class="form-control mt-1"
+               value="@Model.Brand" />
+
         <span asp-validation-for="Brand" class="text-danger small"></span>
     </div>
 
     <div class="col-md-6">
-        <label asp-for="Model" class="form-label">Model</label>
-        <input asp-for="Model" class="form-control" />
+        <label class="form-label">Model</label>
+        <select id="modelSelect" class="form-select">
+            <option value="">Önce marka seçin</option>
+        </select>
+
+        <input type="text"
+               id="modelManual"
+               name="Model"
+               placeholder="Model listede yoksa yazın"
+               class="form-control mt-1"
+               value="@Model.Model" />
+
         <span asp-validation-for="Model" class="text-danger small"></span>
     </div>
 </div>
 
-@* Edit sayfasında Id'yi gizli alan olarak eklemek istersen (Create'te yok):
+@* Edit sayfasında Id gizli alan istersen:
 @if (Model is VehicleUpdateDto up)
 {
     <input type="hidden" name="Id" value="@up.Id" />

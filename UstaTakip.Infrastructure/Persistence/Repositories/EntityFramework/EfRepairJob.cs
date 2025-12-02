@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UstaTakip.Application.DTOs.RepairJobs;
 using UstaTakip.Application.Repositories;
 using UstaTakip.Domain.Entities;
 using UstaTakip.Infrastructure.Persistence.Context;
@@ -37,6 +38,25 @@ namespace UstaTakip.Infrastructure.Persistence.Repositories.EntityFramework
                 .AsNoTracking()
                 .OrderByDescending(r => r.Date)
                 .Take(take)
+                .ToListAsync();
+        }
+
+        public async Task<List<MonthlyRepairJobDto>> GetMonthlyStatsAsync()
+        {
+            return await _context.RepairJobs
+                .AsNoTracking()
+                .GroupBy(j => new { j.Date.Year, j.Date.Month })
+                .Select(g => new MonthlyRepairJobDto
+                {
+                    Year = g.Key.Year,
+                    Month = g.Key.Month,
+
+                    Open = g.Count(x => x.Status == "Open"),
+                    InProgress = g.Count(x => x.Status == "InProgress"),
+                    Completed = g.Count(x => x.Status == "Completed")
+                })
+                .OrderBy(x => x.Year)
+                .ThenBy(x => x.Month)
                 .ToListAsync();
         }
     }

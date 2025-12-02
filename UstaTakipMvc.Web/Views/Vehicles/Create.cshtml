@@ -1,37 +1,81 @@
-﻿@using UstaTakipMvc.Web.Models.Vehicles
+﻿@using System.Text.Json
+@using UstaTakipMvc.Web.Models.Vehicles
 @model VehicleCreateDto
 
 @{
     Layout = "~/Views/Shared/_Layout.App.cshtml";
     ViewData["Title"] = "Araç Ekle";
-    ViewData["ActiveMenu"] = "Vehicles";
 }
 
-<div class="d-flex align-items-center mb-3">
-    <h4 class="mb-0 me-auto"><i class="fa-solid fa-plus me-2"></i>Araç Ekle</h4>
-    <a asp-action="Index" class="btn btn-outline-secondary">
-        <i class="fa-solid fa-arrow-left"></i> Listeye Dön
-    </a>
-</div>
+<h4>Araç Ekle</h4>
+<hr />
 
-<div class="card shadow-sm">
-    <div class="card-body">
-        <form asp-action="Create" method="post" novalidate>
-            @Html.AntiForgeryToken()
-            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+<form asp-action="Create" method="post" novalidate>
+    @Html.AntiForgeryToken()
 
-            @await Html.PartialAsync("_VehicleForm", Model)
+    @await Html.PartialAsync("_VehicleForm", Model)
 
-            <div class="d-flex gap-2 mt-3">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fa-regular fa-floppy-disk me-1"></i> Kaydet
-                </button>
-                <a asp-action="Index" class="btn btn-outline-secondary">İptal</a>
-            </div>
-        </form>
-    </div>
-</div>
+    <button class="btn btn-primary mt-3">
+        Kaydet
+    </button>
+    <a asp-action="Index" class="btn btn-outline-secondary mt-3">İptal</a>
+</form>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        // C# Dictionary<string, List<string>> → JS objesine çevir
+        const models = @Html.Raw(JsonSerializer.Serialize(ViewBag.Models));
+
+        const brandSelect = document.getElementById("brandSelect");
+        const modelSelect = document.getElementById("modelSelect");
+        const brandManual = document.getElementById("brandManual");
+        const modelManual = document.getElementById("modelManual");
+
+        function fillModels(brand) {
+            modelSelect.innerHTML = "<option value=''>Model seçin</option>";
+
+            if (brand && models[brand]) {
+                models[brand].forEach(m => {
+                    const opt = document.createElement("option");
+                    opt.value = m;
+                    opt.textContent = m;
+                    modelSelect.appendChild(opt);
+                });
+            }
+        }
+
+        // Marka değişince modelleri doldur
+        brandSelect.addEventListener("change", function () {
+            const brand = this.value;
+            fillModels(brand);
+
+            // Kullanıcı dropdown'dan seçtiyse manuel alanı temizle
+            if (brand) {
+                brandManual.value = brand;
+            }
+        });
+
+        // Model seçilince manuel model alanını doldur
+        modelSelect.addEventListener("change", function () {
+            const model = this.value;
+            if (model) {
+                modelManual.value = model;
+            }
+        });
+
+        // Sayfa ilk yüklendiğinde (validation hatası sonrası geri gelme vb.)
+        const selectedBrand = '@(Model.Brand ?? "")';
+        const selectedModel = '@(Model.Model ?? "")';
+
+        if (selectedBrand && models[selectedBrand]) {
+            brandSelect.value = selectedBrand;
+            fillModels(selectedBrand);
+
+            if (selectedModel) {
+                modelSelect.value = selectedModel;
+            }
+        }
+    </script>
 }

@@ -1,14 +1,276 @@
-﻿.app-wrap {
+﻿/* =========================================================
+   GLOBAL LAYOUT
+========================================================= */
+
+.app-wrap {
     min-height: calc(100vh - 56px);
+    position: relative;
 }
+
+/* =========================================================
+   SIDEBAR — NORMAL
+========================================================= */
 
 .app-sidebar {
     width: 260px;
     background: #fff;
+    border-right: 1px solid #ddd;
+    overflow-y: auto;
+    transition: width 0.25s ease;
+    position: relative;
+    z-index: 3000 !important; /* HER ZAMAN ÜSTTE */
 }
+
+    .app-sidebar .list-group-item {
+        white-space: nowrap;
+        overflow: hidden;
+    }
+
+    /* =========================================================
+   SIDEBAR — COLLAPSED
+========================================================= */
+
+    .app-sidebar.collapsed {
+        width: 70px !important;
+    }
+
+        .app-sidebar.collapsed .menu-text {
+            display: none !important;
+        }
+
+        .app-sidebar.collapsed .list-group-item {
+            text-align: center;
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        .app-sidebar.collapsed i {
+            margin-right: 0 !important;
+        }
+
+/* =========================================================
+   HOVER — DESKTOP
+========================================================= */
+
+@media (min-width: 992px) {
+    .app-sidebar.collapsed:hover {
+        width: 260px !important;
+    }
+
+        .app-sidebar.collapsed:hover .menu-text {
+            display: inline !important;
+        }
+
+        .app-sidebar.collapsed:hover .list-group-item {
+            text-align: left;
+            padding-left: 1rem;
+        }
+
+        .app-sidebar.collapsed:hover i {
+            margin-right: 0.5rem !important;
+        }
+}
+
+/* =========================================================
+   MOBILE SIDEBAR
+========================================================= */
 
 @media (max-width: 992px) {
     .app-sidebar {
-        display: none;
+        display: none !important;
     }
+
+        .app-sidebar.mobile-open {
+            display: block !important;
+            position: absolute;
+            width: 260px !important;
+            height: calc(100vh - 56px);
+            top: 56px;
+            left: 0;
+            z-index: 4000 !important;
+            background: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+}
+
+/* =========================================================
+   OVERLAY
+========================================================= */
+
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 56px;
+    left: 0;
+    width: 100%;
+    height: calc(100vh - 56px);
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 2500;
+    transition: opacity 0.25s ease;
+}
+
+    .sidebar-overlay.active {
+        display: block;
+        opacity: 1;
+    }
+
+/* =========================================================
+   MAIN CONTENT
+========================================================= */
+
+.app-main {
+    position: relative;
+    z-index: 1; /* ARTIK sidebar üstte */
+}
+
+/* =========================================================
+   DARK MODE — SIDEBAR
+========================================================= */
+
+:root[data-theme="dark"] .app-sidebar {
+    background: #1e1e2e;
+    border-color: #2b2b3c;
+}
+
+    :root[data-theme="dark"] .app-sidebar .list-group-item {
+        background: #1e1e2e;
+        color: #ddd;
+    }
+
+        :root[data-theme="dark"] .app-sidebar .list-group-item.active {
+            background: #2b2b3c;
+        }
+
+/* =========================================================
+   DARK MODE — NAVBAR
+========================================================= */
+
+:root[data-theme="dark"] .navbar {
+    background: #111827 !important;
+}
+
+/* =========================================================
+   DARK MODE — MAIN CONTENT
+========================================================= */
+
+:root[data-theme="dark"] .app-main {
+    background: #111827;
+    color: #e5e7eb;
+}
+
+    :root[data-theme="dark"] .app-main .container-fluid {
+        background-color: transparent;
+        color: #e5e7eb;
+    }
+
+/* =========================================================
+   DARK MODE — CARDS
+========================================================= */
+
+:root[data-theme="dark"] .card {
+    background: #1f2937 !important;
+    border-color: #374151 !important;
+    color: #e5e7eb !important;
+}
+
+:root[data-theme="dark"] .card-header {
+    background: #111827 !important;
+}
+
+/* =========================================================
+   DARK MODE — TABLES
+========================================================= */
+
+:root[data-theme="dark"] .table,
+:root[data-theme="dark"] .table * {
+    background: #1f2937 !important;
+    color: #e5e7eb !important;
+    border-color: #374151 !important;
+}
+
+    :root[data-theme="dark"] .table thead th {
+        background: #111827 !important;
+    }
+
+:root[data-theme="dark"] .table-hover tbody tr:hover {
+    background: #2d3748 !important;
+}
+
+/* Light header override */
+:root[data-theme="dark"] .table-light,
+:root[data-theme="dark"] .table-light th,
+:root[data-theme="dark"] .table-light td {
+    background: #111827 !important;
+    color: #e5e7eb !important;
+}
+
+/* =========================================================
+   DARK MODE — INPUTS
+========================================================= */
+
+:root[data-theme="dark"] .form-control,
+:root[data-theme="dark"] .form-select {
+    background: #1e2533 !important;
+    border-color: #374151 !important;
+    color: #e5e7eb !important;
+}
+
+    :root[data-theme="dark"] .form-control:focus,
+    :root[data-theme="dark"] .form-select:focus {
+        background: #242b39 !important;
+        border-color: #4b5563 !important;
+        color: #fff !important;
+        box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25) !important;
+    }
+
+    :root[data-theme="dark"] .form-control::placeholder {
+        color: #9ca3af !important;
+    }
+
+/* =========================================================
+   DARK MODE — BUTTONS
+========================================================= */
+
+:root[data-theme="dark"] .btn-primary {
+    background: #2563eb !important;
+    border-color: #1d4ed8 !important;
+    color: #fff !important;
+}
+
+    :root[data-theme="dark"] .btn-primary:hover {
+        background: #1e40af !important;
+    }
+
+:root[data-theme="dark"] .btn-outline-secondary {
+    color: #e5e7eb !important;
+    border-color: #6b7280 !important;
+}
+
+:root[data-theme="dark"] .btn-outline-danger {
+    border-color: #ef4444 !important;
+    color: #fca5a5 !important;
+}
+
+    :root[data-theme="dark"] .btn-outline-danger:hover {
+        background: rgba(239, 68, 68, 0.2) !important;
+        color: #fecaca !important;
+    }
+
+/* =========================================================
+   DARK MODE — MODAL
+========================================================= */
+
+:root[data-theme="dark"] .modal-content {
+    background: #1f2937 !important;
+    border-color: #374151 !important;
+    color: #e5e7eb !important;
+}
+
+:root[data-theme="dark"] .modal-header,
+:root[data-theme="dark"] .modal-footer {
+    background: #111827 !important;
+}
+
+:root[data-theme="dark"] .modal .btn-close {
+    filter: invert(1);
 }

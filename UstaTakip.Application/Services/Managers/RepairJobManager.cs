@@ -89,6 +89,13 @@ namespace UstaTakip.Application.Services.Managers
             return new SuccessDataResult<List<RepairJobListDto>>(dto);
         }
 
+        [CacheAspect]
+        public async Task<IDataResult<List<MonthlyRepairJobDto>>> GetMonthlyStatsAsync()
+        {
+            var data = await _repairJobDal.GetMonthlyStatsAsync();
+            return new SuccessDataResult<List<MonthlyRepairJobDto>>(data);
+        }
+
     }
 
 

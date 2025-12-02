@@ -51,6 +51,7 @@ namespace UstaTakipMvc.Web.Controllers
         public async Task<IActionResult> Create(CancellationToken ct)
         {
             await LoadVehicles(ct);
+            ViewBag.Companies = InsuranceCompanies.All;
             return View(new InsurancePolicyCreateDto
             {
                 StartDate = DateTime.Today,
@@ -121,6 +122,7 @@ namespace UstaTakipMvc.Web.Controllers
             }
 
             await LoadVehicles(ct, model.VehicleId);
+            ViewBag.Companies = InsuranceCompanies.All;
             return View(model);
         }
 
