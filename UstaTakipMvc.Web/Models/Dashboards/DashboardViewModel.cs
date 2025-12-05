@@ -19,6 +19,7 @@ namespace UstaTakipMvc.Web.Models.Dashboards
         public List<RepairJobListDto> RecentRepairs { get; set; } = new();
 
         // Grafik verisi
-        public List<MonthlyRepairJobDto> MonthlyStats { get; set; } = new();
+        public List<MonthlyRepairJobStatsDto> MonthlyStats { get; set; } = new();
+
     }
 }

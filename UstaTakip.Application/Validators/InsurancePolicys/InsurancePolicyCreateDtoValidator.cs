@@ -10,7 +10,7 @@ namespace UstaTakip.Application.Validators.InsurancePolicys
 {
     public class InsurancePolicyCreateDtoValidator : AbstractValidator<InsurancePolicyCreateDto>
     {
-        public InsurancePolicyCreateDtoValidator()
+       /* public InsurancePolicyCreateDtoValidator()
         {
             RuleFor(x => x.CompanyName)
                 .NotEmpty().WithMessage("Sigorta şirketi adı boş olamaz.");
@@ -27,7 +27,7 @@ namespace UstaTakip.Application.Validators.InsurancePolicys
 
             RuleFor(x => x.VehicleId)
                 .NotEmpty().WithMessage("Araç seçilmelidir.");
-        }
+        }*/
     }
 
 }

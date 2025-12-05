@@ -12,8 +12,10 @@ namespace UstaTakip.Application.Interfaces.Services.Contracts
     {
         Task<IDataResult<List<InsurancePaymentListDto>>> GetAllAsync();
         Task<IDataResult<InsurancePaymentListDto>> GetByIdAsync(Guid id);
-        Task<IDataResult<InsurancePaymentListDto>> GetByRepairJobIdAsync(Guid repairJobId);
+
+        Task<IDataResult<List<InsurancePaymentListDto>>> GetByRepairJobIdAsync(Guid repairJobId);
         Task<IDataResult<List<InsurancePaymentListDto>>> GetByPolicyIdAsync(Guid insurancePolicyId);
+
         Task<IResult> AddAsync(InsurancePaymentCreateDto dto);
         Task<IResult> UpdateAsync(InsurancePaymentUpdateDto dto);
         Task<IResult> DeleteAsync(Guid id);

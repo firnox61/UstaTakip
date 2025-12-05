@@ -10,7 +10,7 @@ namespace UstaTakip.Application.Validators.InsurancePayments
 {
     public class InsurancePaymentUpdateDtoValidator : AbstractValidator<InsurancePaymentUpdateDto>
     {
-        public InsurancePaymentUpdateDtoValidator()
+       /* public InsurancePaymentUpdateDtoValidator()
         {
             RuleFor(x => x.Id)
                 .NotEmpty().WithMessage("Ödeme ID boş olamaz.");
@@ -26,7 +26,7 @@ namespace UstaTakip.Application.Validators.InsurancePayments
 
             RuleFor(x => x.PaidDate)
                 .LessThanOrEqualTo(DateTime.UtcNow).WithMessage("Ödeme tarihi bugünden ileri olamaz.");
-        }
+        }*/
     }
 
 

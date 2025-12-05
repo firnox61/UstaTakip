@@ -34,19 +34,19 @@ namespace UstaTakip.WebAPI.Controllers
             return NotFound(result);
         }
 
-        [HttpGet("policy/{policyId}")]
-        public async Task<IActionResult> GetByPolicyId(Guid policyId)
+        [HttpGet("repairjob/{repairJobId}")]
+        public async Task<IActionResult> GetByRepairJobId(Guid repairJobId)
         {
-            var result = await _insurancePaymentService.GetByPolicyIdAsync(policyId);
+            var result = await _insurancePaymentService.GetByRepairJobIdAsync(repairJobId);
             if (result.Success)
                 return Ok(result);
             return NotFound(result);
         }
 
-        [HttpGet("repair-job/{repairJobId}")]
-        public async Task<IActionResult> GetByRepairJobId(Guid repairJobId)
+        [HttpGet("policy/{policyId}")]
+        public async Task<IActionResult> GetByPolicyId(Guid policyId)
         {
-            var result = await _insurancePaymentService.GetByRepairJobIdAsync(repairJobId);
+            var result = await _insurancePaymentService.GetByPolicyIdAsync(policyId);
             if (result.Success)
                 return Ok(result);
             return NotFound(result);
@@ -79,4 +79,5 @@ namespace UstaTakip.WebAPI.Controllers
             return BadRequest(result);
         }
     }
+
 }

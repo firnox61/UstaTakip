@@ -93,13 +93,13 @@ namespace UstaTakip.Infrastructure.Persistence.Context
                 .HasForeignKey(ip => ip.InsurancePolicyId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // RepairJob - InsurancePayment (1:1)
+            // RepairJob - InsurancePayment (1:N)  ← DÜZELTİLMİŞ HÂLİ
             modelBuilder.Entity<InsurancePayment>()
                 .HasOne(ip => ip.RepairJob)
-                .WithOne(rj => rj.InsurancePayment)
-                .HasForeignKey<InsurancePayment>(ip => ip.RepairJobId)
-                .OnDelete(DeleteBehavior.Restrict); // İsteğe bağlı: onarım silinirse ödeme kalabilir
-                                                    // RepairJob - RepairJobImage (1:N)
+                .WithMany(rj => rj.InsurancePayments)
+                .HasForeignKey(ip => ip.RepairJobId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.Entity<RepairJob>()
                 .HasMany(r => r.RepairJobImages)
                 .WithOne(i => i.RepairJob)

@@ -42,15 +42,24 @@ namespace UstaTakip.Application.Services.Managers
         [CacheRemoveAspect("IRepairJobService.Get*")]
         public async Task<IResult> UpdateAsync(RepairJobUpdateDto dto)
         {
-            var job = _mapper.Map<RepairJob>(dto);
+            var job = await _repairJobDal.GetAsync(x => x.Id == dto.Id);
+            if (job == null)
+                return new ErrorResult("İşlem bulunamadı.");
+
+            _mapper.Map(dto, job);
             await _repairJobDal.UpdateAsync(job);
+
             return new SuccessResult("İşlem güncellendi.");
         }
 
         [CacheRemoveAspect("IRepairJobService.Get*")]
         public async Task<IResult> DeleteAsync(Guid id)
         {
-            await _repairJobDal.DeleteAsync(new RepairJob { Id = id });
+            var job = await _repairJobDal.GetAsync(x => x.Id == id);
+            if (job == null)
+                return new ErrorResult("İşlem bulunamadı.");
+
+            await _repairJobDal.DeleteAsync(job);
             return new SuccessResult("İşlem silindi.");
         }
 
@@ -58,8 +67,9 @@ namespace UstaTakip.Application.Services.Managers
         public async Task<IDataResult<List<RepairJobListDto>>> GetAllAsync()
         {
             var jobs = await _repairJobDal.GetAllWithVehicleAsync();
-            var dto = _mapper.Map<List<RepairJobListDto>>(jobs);
-            return new SuccessDataResult<List<RepairJobListDto>>(dto);
+            return new SuccessDataResult<List<RepairJobListDto>>(
+                _mapper.Map<List<RepairJobListDto>>(jobs)
+            );
         }
 
         [CacheAspect]
@@ -69,34 +79,50 @@ namespace UstaTakip.Application.Services.Managers
             if (job == null)
                 return new ErrorDataResult<RepairJobListDto>("İşlem bulunamadı.");
 
-            var dto = _mapper.Map<RepairJobListDto>(job);
-            return new SuccessDataResult<RepairJobListDto>(dto);
+            return new SuccessDataResult<RepairJobListDto>(
+                _mapper.Map<RepairJobListDto>(job)
+            );
+        }
+        public async Task<IDataResult<RepairJobUpdateDto>> GetUpdateDtoAsync(Guid id)
+        {
+            var job = await _repairJobDal.GetByIdWithVehicleAndPolicyAsync(id);
+            if (job == null)
+                return new ErrorDataResult<RepairJobUpdateDto>("İşlem bulunamadı.");
+
+            return new SuccessDataResult<RepairJobUpdateDto>(
+                _mapper.Map<RepairJobUpdateDto>(job)
+            );
         }
 
         [CacheAspect]
         public async Task<IDataResult<List<RepairJobListDto>>> GetByVehicleIdAsync(Guid vehicleId)
         {
-            var jobs = await _repairJobDal.GetAllAsync(x => x.VehicleId == vehicleId);
-            var dto = _mapper.Map<List<RepairJobListDto>>(jobs);
-            return new SuccessDataResult<List<RepairJobListDto>>(dto);
+            var jobs = await _repairJobDal.GetAllWithVehicleAsync(); // daha doğru Include
+            var filtered = jobs.Where(j => j.VehicleId == vehicleId).ToList();
+
+            return new SuccessDataResult<List<RepairJobListDto>>(
+                _mapper.Map<List<RepairJobListDto>>(filtered)
+            );
         }
+
         [CacheAspect]
         public async Task<IDataResult<List<RepairJobListDto>>> GetRecentAsync(int take)
         {
-            take = Math.Clamp(take, 1, 100);
             var entities = await _repairJobDal.GetRecentWithVehicleAsync(take);
-            var dto = _mapper.Map<List<RepairJobListDto>>(entities);
-            return new SuccessDataResult<List<RepairJobListDto>>(dto);
+            return new SuccessDataResult<List<RepairJobListDto>>(
+                _mapper.Map<List<RepairJobListDto>>(entities)
+            );
         }
 
         [CacheAspect]
-        public async Task<IDataResult<List<MonthlyRepairJobDto>>> GetMonthlyStatsAsync()
+        public async Task<IDataResult<List<MonthlyRepairJobStatsDto>>> GetMonthlyStatsAsync()
         {
             var data = await _repairJobDal.GetMonthlyStatsAsync();
-            return new SuccessDataResult<List<MonthlyRepairJobDto>>(data);
+            return new SuccessDataResult<List<MonthlyRepairJobStatsDto>>(data);
         }
 
     }
+
 
 
 }

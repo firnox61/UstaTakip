@@ -1,18 +1,36 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace UstaTakipMvc.Web.Models.RepairJobs
 {
     public class MonthlyRepairJobDto
     {
-        public int Year { get; set; }
-        public int Month { get; set; }
+        public Guid RepairJobId { get; set; }
 
-        public int Open { get; set; }
-        public int InProgress { get; set; }
-        public int Completed { get; set; }
-        public int Cancelled { get; set; }
-        public string MonthName => new DateTime(Year, Month, 1)
-            .ToString("MMMM", new CultureInfo("tr-TR"));
+        public string Description { get; set; } = string.Empty;
+        public decimal Price { get; set; }
+        public DateTime Date { get; set; }
+
+        // Sigorta ödeme oranı (%0–100 arası)
+        public int InsurancePaymentRate { get; set; }
+
+        // Sigortadan ödenen toplam miktar (iş bazlı)
+        public decimal TotalInsurancePaid { get; set; }
+
+        // Müşteriye düşen tutar
+        public decimal CustomerPayAmount => Price - TotalInsurancePaid;
+
+        // Araç bilgisi (raporlama için)
+        public string VehiclePlate { get; set; } = string.Empty;
+
+        // Sigorta şirketi bilgisi
+        public string CompanyName { get; set; } = string.Empty;
+        public string PolicyNumber { get; set; } = string.Empty;
+        public string AgencyCode { get; set; } = string.Empty;
     }
 
 }

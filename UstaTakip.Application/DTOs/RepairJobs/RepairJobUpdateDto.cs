@@ -9,13 +9,20 @@ using UstaTakip.Domain.Enums;
 namespace UstaTakip.Application.DTOs.RepairJobs
 {
 
-    public class RepairJobUpdateDto : IDto
+    public class RepairJobUpdateDto
     {
         public Guid Id { get; set; }
-        public string Description { get; set; }
+
+        public string Description { get; set; } = string.Empty;
         public decimal Price { get; set; }
         public DateTime Date { get; set; }
+
         public Guid VehicleId { get; set; }
-        public string Status { get; set; } = "Open"; // varsayılan
+
+        public int InsurancePaymentRate { get; set; }
+        public Guid? InsurancePolicyId { get; set; }
+
+        public string Status { get; set; } = "Open";
     }
+
 }

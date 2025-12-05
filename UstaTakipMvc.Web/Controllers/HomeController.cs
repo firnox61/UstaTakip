@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
-using System.Net;
 using System.Text.Json;
 using UstaTakipMvc.Web.Models;
 using UstaTakipMvc.Web.Models.Customers;
@@ -12,7 +11,6 @@ using UstaTakipMvc.Web.Models.Shared;
 using UstaTakipMvc.Web.Models.Vehicles;
 
 namespace UstaTakipMvc.Web.Controllers;
-
 
 [Authorize]
 public class HomeController : Controller
@@ -27,15 +25,16 @@ public class HomeController : Controller
         _api = factory.CreateClient("UstaApi");
         _api.DefaultRequestHeaders.Accept.ParseAdd("application/json");
     }
+
     public async Task<IActionResult> Index(CancellationToken ct = default)
     {
         var vm = new DashboardViewModel();
 
         try
         {
-            // =============================
+            // =====================================================
             // 1) Araçlar
-            // =============================
+            // =====================================================
             var vehicleResp = await GetApiResponse<List<VehicleListDto>>("vehicles", ct);
             vm.VehicleCount = vehicleResp?.Data?.Count ?? 0;
             vm.RecentVehicles = vehicleResp?.Data?
@@ -44,18 +43,17 @@ public class HomeController : Controller
                 .ToList() ?? new();
 
 
-            // =============================
+            // =====================================================
             // 2) Müþteriler
-            // =============================
+            // =====================================================
             var customerResp = await GetApiResponse<List<CustomerListDto>>("customers", ct);
             vm.CustomerCount = customerResp?.Data?.Count ?? 0;
 
 
-            // =============================
-            // 3) Tamir Ýþleri (Open + InProgress + Completed)
-            // =============================
+            // =====================================================
+            // 3) Tamir Ýþleri
+            // =====================================================
             var repairResp = await GetApiResponse<List<RepairJobListDto>>("repairjobs", ct);
-
             var repairs = repairResp?.Data ?? new List<RepairJobListDto>();
 
             vm.OpenRepairCount = repairs.Count(r => r.Status == "Open");
@@ -67,22 +65,24 @@ public class HomeController : Controller
                 .ToList();
 
 
-            // =============================
-            // 4) Yaklaþan Poliçeler (30 gün)
-            // =============================
-            var expiringResp = await GetApiResponse<List<InsurancePolicyListDto>>("insurancepolicies/expiring?days=30&take=5", ct);
+            // =====================================================
+            // 4) Yaklaþan Poliçeler
+            // =====================================================
+            var expiringResp = await GetApiResponse<List<InsurancePolicyListDto>>(
+                "insurancepolicies/expiring?days=30&take=5", ct);
 
             vm.ExpiringPolicies = expiringResp?.Data ?? new();
             vm.ExpiringPolicyCount = vm.ExpiringPolicies.Count;
 
 
-            // =============================
+            // =====================================================
             // 5) Aylýk Tamir Ýstatistikleri (Grafik)
-            // =============================
-            var monthlyResp = await GetApiResponse<List<MonthlyRepairJobDto>>(
-      "repairjobs/GetJobMonthly", ct);
+            // =====================================================
+            var monthlyResp = await GetApiResponse<List<MonthlyRepairJobStatsDto>>(
+     "RepairJobs/monthly-stats", ct);
 
             vm.MonthlyStats = monthlyResp?.Data ?? new();
+
         }
         catch (Exception ex)
         {
@@ -92,7 +92,6 @@ public class HomeController : Controller
 
         return View(vm);
     }
-
 
     private async Task<ApiDataResult<T>?> GetApiResponse<T>(string endpoint, CancellationToken ct)
     {

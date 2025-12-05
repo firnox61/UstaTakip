@@ -1,0 +1,99 @@
+﻿@model List<UstaTakipMvc.Web.Models.InsurancePayments.InsurancePaymentListDto>
+
+@{
+    Layout = "~/Views/Shared/_Layout.App.cshtml";
+    ViewData["Title"] = "Sigorta Ödemeleri";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="m-0">Sigorta Ödemeleri</h4>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fa fa-plus me-1"></i> Yeni Ödeme
+    </a>
+</div>
+
+<!-- 🔍 Arama Kutusu -->
+<div class="row g-2 mb-3">
+    <div class="col-12 col-md-6 ms-auto">
+        <div class="input-group">
+            <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+            <input id="q" type="search" class="form-control" placeholder="İşlem, plaka, poliçe no, şirket, tutar, not ara...">
+        </div>
+    </div>
+</div>
+
+<table id="paymentsTable" class="table table-hover align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>İşlem</th>
+            <th>Plaka</th>
+            <th>Şirket</th>
+            <th>Poliçe No</th>
+            <th>Ödeme Oranı</th>
+            <th>Ödenen Tutar</th>
+            <th>Tarih</th>
+            <th>Not</th>
+            <th style="width:130px;"></th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var x in Model)
+        {
+            <tr data-row>
+                <td data-col>@x.RepairJobDescription</td>
+                <td data-col>@x.VehiclePlate</td>
+                <td data-col>@x.CompanyName</td>
+                <td data-col>@x.PolicyNumber</td>
+                <td data-col>%@x.PaymentRate</td>
+                <td data-col>@x.PaidAmount.ToString("C2")</td>
+                <td data-col>@x.PaidDate.ToString("dd.MM.yyyy")</td>
+                <td data-col>@x.Note</td>
+
+                <td class="text-end">
+                    <a asp-action="Edit" asp-route-id="@x.Id" class="btn btn-sm btn-outline-secondary">
+                        <i class="fa fa-pen"></i>
+                    </a>
+
+                    <form asp-action="Delete" asp-route-id="@x.Id" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                                onclick="return confirm('Silinsin mi?')">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
+
+        @if (!Model.Any())
+        {
+            <tr>
+                <td colspan="9" class="text-center text-muted py-4">Kayıt bulunamadı.</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // 🔍 Client-side Arama
+            const q = document.getElementById("q");
+            const rows = Array.from(document.querySelectorAll("#paymentsTable tbody tr[data-row]"));
+
+            q?.addEventListener("input", function () {
+                const needle = (q.value || "").toLowerCase();
+
+                rows.forEach(tr => {
+                    const hay = Array.from(tr.querySelectorAll("[data-col]"))
+                                     .map(td => (td.textContent || "").toLowerCase())
+                                     .join(" ");
+
+                    tr.style.display = hay.includes(needle) ? "" : "none";
+                });
+            });
+        });
+    </script>
+}

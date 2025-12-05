@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Text.Json;
+using UstaTakipMvc.Web.Models.InsurancePolicies;
 using UstaTakipMvc.Web.Models.RepairJobImages;
 using UstaTakipMvc.Web.Models.RepairJobs;
 using UstaTakipMvc.Web.Models.Shared;
@@ -24,11 +25,12 @@ namespace UstaTakipMvc.Web.Controllers
             _api = factory.CreateClient("UstaApi");
         }
 
-        // -------- LIST --------
+        // ---------------- LIST ----------------
         [HttpGet]
         public async Task<IActionResult> Index(string sortField, string sortOrder = "asc", CancellationToken ct = default)
         {
             var resp = await _api.GetAsync("repairjobs", ct);
+
             if (!resp.IsSuccessStatusCode)
             {
                 TempData["Error"] = await ReadApiErrorAsync(resp, ct);
@@ -36,9 +38,8 @@ namespace UstaTakipMvc.Web.Controllers
             }
 
             var wrap = await resp.Content.ReadFromJsonAsync<ApiDataResult<List<RepairJobListDto>>>(_json, ct);
-            var data = wrap?.Data ?? new List<RepairJobListDto>();
+            var data = wrap?.Data ?? new();
 
-            // -------- STATUS özel sıralama fonksiyonu --------
             int StatusRank(string s) => s switch
             {
                 "Open" => 1,
@@ -48,7 +49,6 @@ namespace UstaTakipMvc.Web.Controllers
                 _ => 99
             };
 
-            // -------- Sıralama işlemi --------
             data = sortField switch
             {
                 "Plate" => sortOrder == "asc"
@@ -74,25 +74,29 @@ namespace UstaTakipMvc.Web.Controllers
                 _ => data
             };
 
-            // -------- ViewBag ile mevcut sıralamayı taşıyalım --------
             ViewBag.SortField = sortField;
             ViewBag.SortOrder = sortOrder;
 
             return View(data);
         }
 
-
-        // -------- CREATE (GET) --------
+        // ---------------- CREATE (GET) ----------------
         [HttpGet]
         public async Task<IActionResult> Create(CancellationToken ct)
         {
-            await LoadVehicleOptionsAsync(ct, null);
+            await LoadVehicleOptionsAsync(ct);
+            await LoadPolicyOptionsAsync(ct);
+
             ViewBag.StatusOptions = BuildStatusOptions(null);
 
-            return View(new RepairJobCreateDto());
+            return View(new RepairJobCreateDto
+            {
+                Date = DateTime.Today,
+                InsurancePaymentRate = 100
+            });
         }
 
-        // -------- CREATE (POST) --------
+        // ---------------- CREATE (POST) ----------------
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(RepairJobCreateDto dto, CancellationToken ct)
@@ -100,6 +104,7 @@ namespace UstaTakipMvc.Web.Controllers
             if (!ModelState.IsValid)
             {
                 await LoadVehicleOptionsAsync(ct, dto.VehicleId);
+                await LoadPolicyOptionsAsync(ct, dto.InsurancePolicyId);
                 ViewBag.StatusOptions = BuildStatusOptions(dto.Status);
                 return View(dto);
             }
@@ -110,19 +115,21 @@ namespace UstaTakipMvc.Web.Controllers
             {
                 TempData["Error"] = await ReadApiErrorAsync(resp, ct);
                 await LoadVehicleOptionsAsync(ct, dto.VehicleId);
+                await LoadPolicyOptionsAsync(ct, dto.InsurancePolicyId);
                 ViewBag.StatusOptions = BuildStatusOptions(dto.Status);
                 return View(dto);
             }
 
-            TempData["Success"] = "Tamir/Bakım başarıyla oluşturuldu.";
+            TempData["Success"] = "İşlem başarıyla eklendi.";
             return RedirectToAction(nameof(Index));
         }
 
-        // -------- EDIT (GET) --------
+        // ---------------- EDIT (GET) ----------------
         [HttpGet]
         public async Task<IActionResult> Edit(Guid id, CancellationToken ct)
         {
-            var resp = await _api.GetAsync($"repairjobs/{id}", ct);
+            var resp = await _api.GetAsync($"repairjobs/update-dto/{id}");
+
 
             if (!resp.IsSuccessStatusCode)
             {
@@ -139,29 +146,27 @@ namespace UstaTakipMvc.Web.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // Araç listesi
             await LoadVehicleOptionsAsync(ct, model.VehicleId);
-
-            // Status listesi
+            await LoadPolicyOptionsAsync(ct, model.InsurancePolicyId);
             ViewBag.StatusOptions = BuildStatusOptions(model.Status);
 
-            // --- REPAIR JOB IMAGES (Galeri) ---
+            // Load images
             var imgResp = await _api.GetAsync($"repairjobimages/by-repair/{id}", ct);
             if (imgResp.IsSuccessStatusCode)
             {
-                var wrapImages = await imgResp.Content.ReadFromJsonAsync<List<RepairJobImageListDto>>(_json, ct);
-                ViewBag.RepairJobImages = wrapImages ?? new();
+                ViewBag.RepairJobImages =
+                    await imgResp.Content.ReadFromJsonAsync<List<RepairJobImageListDto>>(_json, ct)
+                    ?? new();
             }
             else
             {
                 ViewBag.RepairJobImages = new List<RepairJobImageListDto>();
             }
 
-
             return View(model);
         }
 
-        // -------- EDIT (POST) --------
+        // ---------------- EDIT (POST) ----------------
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(RepairJobUpdateDto dto, CancellationToken ct)
@@ -169,6 +174,7 @@ namespace UstaTakipMvc.Web.Controllers
             if (!ModelState.IsValid)
             {
                 await LoadVehicleOptionsAsync(ct, dto.VehicleId);
+                await LoadPolicyOptionsAsync(ct, dto.InsurancePolicyId);
                 ViewBag.StatusOptions = BuildStatusOptions(dto.Status);
                 return View(dto);
             }
@@ -179,34 +185,29 @@ namespace UstaTakipMvc.Web.Controllers
             {
                 TempData["Error"] = await ReadApiErrorAsync(resp, ct);
                 await LoadVehicleOptionsAsync(ct, dto.VehicleId);
+                await LoadPolicyOptionsAsync(ct, dto.InsurancePolicyId);
                 ViewBag.StatusOptions = BuildStatusOptions(dto.Status);
                 return View(dto);
             }
 
-            TempData["Success"] = "Tamir/Bakım kaydı güncellendi.";
+            TempData["Success"] = "Kayıt güncellendi.";
             return RedirectToAction(nameof(Index));
         }
 
-        // -------- DELETE --------
+        // ---------------- DELETE ----------------
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
         {
             var resp = await _api.DeleteAsync($"repairjobs/{id}", ct);
 
-            if (!resp.IsSuccessStatusCode)
-            {
-                TempData["Error"] = await ReadApiErrorAsync(resp, ct);
-            }
-            else
-            {
-                TempData["Success"] = "Kayıt başarıyla silindi.";
-            }
+            TempData[resp.IsSuccessStatusCode ? "Success" : "Error"] =
+                resp.IsSuccessStatusCode ? "Kayıt silindi." : await ReadApiErrorAsync(resp, ct);
 
             return RedirectToAction(nameof(Index));
         }
 
-        // -------- helpers --------
+        // ---------------- HELPERS ----------------
 
         private async Task LoadVehicleOptionsAsync(CancellationToken ct, Guid? selectedId = null)
         {
@@ -228,14 +229,35 @@ namespace UstaTakipMvc.Web.Controllers
             }).ToList();
         }
 
-        private static List<SelectListItem> BuildStatusOptions(string? selected = null)
+        private async Task LoadPolicyOptionsAsync(CancellationToken ct, Guid? selectedId = null)
         {
-            var values = new[] { "Open", "InProgress", "Completed", "Cancelled" };
-            return values.Select(v => new SelectListItem
+            var resp = await _api.GetAsync("insurancepolicies", ct);
+            if (!resp.IsSuccessStatusCode)
             {
-                Text = v,
-                Value = v,
-                Selected = string.Equals(v, selected, StringComparison.OrdinalIgnoreCase)
+                ViewBag.PolicyOptions = new List<SelectListItem>();
+                return;
+            }
+
+            var wrap = await resp.Content.ReadFromJsonAsync<ApiDataResult<List<InsurancePolicyListDto>>>(_json, ct);
+            var policies = wrap?.Data ?? new();
+
+            ViewBag.PolicyOptions = policies.Select(p => new SelectListItem
+            {
+                Text = $"{p.CompanyName} - {p.PolicyNumber} ({p.VehiclePlate})",
+                Value = p.Id.ToString(),
+                Selected = selectedId.HasValue && p.Id == selectedId.Value
+            }).ToList();
+        }
+
+        private List<SelectListItem> BuildStatusOptions(string? selected)
+        {
+            var statuses = new[] { "Open", "InProgress", "Completed", "Cancelled" };
+
+            return statuses.Select(x => new SelectListItem
+            {
+                Text = x,
+                Value = x,
+                Selected = string.Equals(x, selected, StringComparison.OrdinalIgnoreCase)
             }).ToList();
         }
 
@@ -243,20 +265,15 @@ namespace UstaTakipMvc.Web.Controllers
         {
             try
             {
-                var pd = await resp.Content.ReadFromJsonAsync<ProblemDetails>(_json, ct);
+                var pd = await resp.Content.ReadFromJsonAsync<ProblemDetails>(cancellationToken: ct);
                 if (pd != null)
                 {
-                    var title = string.IsNullOrWhiteSpace(pd.Title) ? "Hata" : pd.Title;
-                    var detail = string.IsNullOrWhiteSpace(pd.Detail) ? "" : $" - {pd.Detail}";
-                    return $"API {(int)resp.StatusCode} {title}{detail}";
+                    return $"{pd.Title} - {pd.Detail}";
                 }
             }
             catch { }
 
-            var raw = await resp.Content.ReadAsStringAsync(ct);
-            return string.IsNullOrWhiteSpace(raw)
-                ? $"API {(int)resp.StatusCode} hatası (boş içerik)."
-                : raw;
+            return await resp.Content.ReadAsStringAsync(ct);
         }
     }
 }

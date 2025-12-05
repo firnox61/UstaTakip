@@ -16,4 +16,5 @@ namespace UstaTakip.Application.Repositories
         Task<List<InsurancePolicy>> GetExpiringAsync(DateTime utcNow, int days, int take);
     }
 
+
 }

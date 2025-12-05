@@ -1,7 +1,7 @@
 ﻿@model List<UstaTakipMvc.Web.Models.InsurancePolicies.InsurancePolicyListDto>
 @{
     Layout = "~/Views/Shared/_Layout.App.cshtml";
-    ViewData["Title"] = "Poliçeler";
+    ViewData["Title"] = "Sigorta Poliçeleri";
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -11,14 +11,25 @@
     </a>
 </div>
 
-<table class="table table-hover align-middle">
+<!-- 🔍 Search Bar -->
+<div class="row g-2 mb-3">
+    <div class="col-12 col-md-6 ms-auto">
+        <div class="input-group">
+            <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+            <input id="q" type="search" class="form-control" placeholder="Şirket, poliçe no, acenta, araç ara...">
+        </div>
+    </div>
+</div>
+
+<table id="policiesTable" class="table table-hover align-middle">
     <thead class="table-light">
         <tr>
             <th>Şirket</th>
             <th>Poliçe No</th>
+            <th>Acenta</th>
             <th>Başlangıç</th>
             <th>Bitiş</th>
-            <th>Tutar</th>
+            <th>Teminat</th>
             <th>Araç</th>
             <th style="width:140px;"></th>
         </tr>
@@ -26,29 +37,58 @@
     <tbody>
         @foreach (var p in Model)
         {
-            <tr>
-                <td>@p.CompanyName</td>
-                <td>@p.PolicyNumber</td>
-                <td>@p.StartDate.ToString("dd.MM.yyyy")</td>
-                <td>@p.EndDate.ToString("dd.MM.yyyy")</td>
-                <td>@p.CoverageAmount.ToString("C0")</td>
-                <td>@p.VehicleId</td> <!-- burada plakayı göstermek istersen VehiclePlate alanını DTO’ya eklemen gerekir -->
+            <tr data-row>
+                <td data-col>@p.CompanyName</td>
+                <td data-col>@p.PolicyNumber</td>
+                <td data-col>@p.AgencyCode</td>
+                <td data-col>@p.StartDate.ToString("dd.MM.yyyy")</td>
+                <td data-col>@p.EndDate.ToString("dd.MM.yyyy")</td>
+                <td data-col>@p.CoverageAmount.ToString("C0")</td>
+                <td data-col>@p.VehiclePlate</td>
+
                 <td class="text-end">
                     <a asp-action="Edit" asp-route-id="@p.Id" class="btn btn-sm btn-outline-secondary">
                         <i class="fa fa-pen"></i>
                     </a>
+
                     <form asp-action="Delete" asp-route-id="@p.Id" method="post" class="d-inline">
                         @Html.AntiForgeryToken()
-                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Silinsin mi?')">
+                        <button type="submit"
+                                class="btn btn-sm btn-outline-danger"
+                                onclick="return confirm('Silinsin mi?')">
                             <i class="fa fa-trash"></i>
                         </button>
                     </form>
                 </td>
             </tr>
         }
+
         @if (!Model.Any())
         {
-            <tr><td colspan="7" class="text-muted text-center py-4">Kayıt bulunamadı.</td></tr>
+            <tr>
+                <td colspan="8" class="text-muted text-center py-4">Kayıt bulunamadı.</td>
+            </tr>
         }
     </tbody>
 </table>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // 🔍 Client-side arama
+            const q = document.getElementById("q");
+            const rows = Array.from(document.querySelectorAll("#policiesTable tbody tr[data-row]"));
+
+            q?.addEventListener("input", function () {
+                const needle = (q.value || "").toLowerCase();
+                rows.forEach(tr => {
+                    const hay = Array.from(tr.querySelectorAll("[data-col]"))
+                                     .map(td => (td.textContent || "").toLowerCase())
+                                     .join(" ");
+                    tr.style.display = hay.includes(needle) ? "" : "none";
+                });
+            });
+        });
+    </script>
+}

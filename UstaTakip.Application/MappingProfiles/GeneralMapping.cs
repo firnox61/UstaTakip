@@ -59,29 +59,92 @@ namespace UstaTakip.Application.MappingProfiles
             CreateMap<Vehicle, VehicleCreateDto>().ReverseMap();
             CreateMap<Vehicle, VehicleUpdateDto>().ReverseMap();
             CreateMap<Vehicle, VehicleListDto>()
-     .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.Customer.FullName))
-     .ForMember(dest => dest.Images, opt => opt.MapFrom(src => src.VehicleImages));
+          .ForMember(dest => dest.CustomerName,
+              opt => opt.MapFrom(src =>
+                  src.Customer.Type == CustomerType.Individual
+                      ? src.Customer.FullName
+                      : src.Customer.CompanyName
+              ))
+          .ForMember(dest => dest.Images,
+              opt => opt.MapFrom(src => src.VehicleImages));
 
 
 
-            // RepairJob
-            CreateMap<RepairJob, RepairJobCreateDto>().ReverseMap();
-            CreateMap<RepairJob, RepairJobUpdateDto>().ReverseMap();
-            CreateMap<RepairJob, RepairJobListDto>()
-             .ForMember(d => d.VehiclePlate, o => o.MapFrom(s => s.Vehicle.Plate));
+
+
 
             CreateMap<VehicleImage, VehicleImageListDto>().ReverseMap();
             CreateMap<VehicleImage, VehicleImageCreateDto>().ReverseMap();
 
-            // InsurancePolicy Mappings
-            CreateMap<InsurancePolicy, InsurancePolicyCreateDto>().ReverseMap();
-            CreateMap<InsurancePolicy, InsurancePolicyUpdateDto>().ReverseMap();
-            CreateMap<InsurancePolicy, InsurancePolicyListDto>().ReverseMap();
+            // ===============================
+            // RepairJob Mappings
+            // ===============================
 
+            CreateMap<RepairJob, RepairJobListDto>()
+                .ForMember(dest => dest.VehiclePlate,
+                    opt => opt.MapFrom(src => src.Vehicle.Plate))
+                .ForMember(dest => dest.CompanyName,
+                    opt => opt.MapFrom(src => src.InsurancePolicy != null
+                        ? src.InsurancePolicy.CompanyName
+                        : null))
+                .ForMember(dest => dest.PolicyNumber,
+                    opt => opt.MapFrom(src => src.InsurancePolicy != null
+                        ? src.InsurancePolicy.PolicyNumber
+                        : null))
+                .ForMember(dest => dest.AgencyCode,
+                    opt => opt.MapFrom(src => src.InsurancePolicy != null
+                        ? src.InsurancePolicy.AgencyCode
+                        : null));
+            CreateMap<RepairJob, RepairJobUpdateDto>();
+
+            CreateMap<RepairJobCreateDto, RepairJob>();
+            CreateMap<RepairJobUpdateDto, RepairJob>();
+
+
+            // ===============================
+            // InsurancePolicy Mappings
+            // ===============================
+
+            CreateMap<InsurancePolicy, InsurancePolicyListDto>()
+                .ForMember(dest => dest.VehiclePlate,
+                    opt => opt.MapFrom(src => src.Vehicle.Plate));
+
+            CreateMap<InsurancePolicyCreateDto, InsurancePolicy>();
+            CreateMap<InsurancePolicyUpdateDto, InsurancePolicy>();
+
+
+            // ===============================
             // InsurancePayment Mappings
-            CreateMap<InsurancePayment, InsurancePaymentCreateDto>().ReverseMap();
-            CreateMap<InsurancePayment, InsurancePaymentUpdateDto>().ReverseMap();
-            CreateMap<InsurancePayment, InsurancePaymentListDto>().ReverseMap();
+            // ===============================
+
+            // InsurancePayment → ListDto
+            CreateMap<InsurancePayment, InsurancePaymentListDto>()
+       .ForMember(dest => dest.RepairJobDescription,
+           opt => opt.MapFrom(src => src.RepairJob.Description))
+       .ForMember(dest => dest.CompanyName,
+           opt => opt.MapFrom(src => src.InsurancePolicy.CompanyName))
+       .ForMember(dest => dest.PolicyNumber,
+           opt => opt.MapFrom(src => src.InsurancePolicy.PolicyNumber))
+       .ForMember(dest => dest.AgencyCode,
+           opt => opt.MapFrom(src => src.InsurancePolicy.AgencyCode))
+       .ForMember(dest => dest.VehiclePlate,
+           opt => opt.MapFrom(src => src.RepairJob.Vehicle.Plate)); // ← EKLENDİ
+
+
+            // CreateDto → Entity
+            CreateMap<InsurancePaymentCreateDto, InsurancePayment>();
+
+            // UpdateDto → Entity
+            CreateMap<InsurancePaymentUpdateDto, InsurancePayment>();
+
+
+
+            // ===============================
+            // MonthlyRepairJobStatsDto (OPSİYONEL)
+            // ===============================
+            // Eğer EF manuel dolduruyorsa gerek yok ama eklersen geleceğe uyumlu olur.
+
+            // CreateMap<MonthlyRepairJobStatsDto, MonthlyRepairJobStatsDto>();
 
         }
     }

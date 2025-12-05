@@ -107,6 +107,9 @@ namespace UstaTakip.Infrastructure.Migrations
                     b.Property<DateTime>("PaidDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("PaymentRate")
+                        .HasColumnType("int");
+
                     b.Property<Guid>("RepairJobId")
                         .HasColumnType("uniqueidentifier");
 
@@ -114,8 +117,7 @@ namespace UstaTakip.Infrastructure.Migrations
 
                     b.HasIndex("InsurancePolicyId");
 
-                    b.HasIndex("RepairJobId")
-                        .IsUnique();
+                    b.HasIndex("RepairJobId");
 
                     b.ToTable("InsurancePayments", (string)null);
                 });
@@ -125,6 +127,10 @@ namespace UstaTakip.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AgencyCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CompanyName")
                         .IsRequired()
@@ -195,6 +201,12 @@ namespace UstaTakip.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("InsurancePaymentRate")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("InsurancePolicyId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<decimal>("Price")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
@@ -207,6 +219,8 @@ namespace UstaTakip.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("InsurancePolicyId");
 
                     b.HasIndex("VehicleId");
 
@@ -361,8 +375,8 @@ namespace UstaTakip.Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("UstaTakip.Domain.Entities.RepairJob", "RepairJob")
-                        .WithOne("InsurancePayment")
-                        .HasForeignKey("UstaTakip.Domain.Entities.InsurancePayment", "RepairJobId")
+                        .WithMany("InsurancePayments")
+                        .HasForeignKey("RepairJobId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -384,11 +398,17 @@ namespace UstaTakip.Infrastructure.Migrations
 
             modelBuilder.Entity("UstaTakip.Domain.Entities.RepairJob", b =>
                 {
+                    b.HasOne("UstaTakip.Domain.Entities.InsurancePolicy", "InsurancePolicy")
+                        .WithMany()
+                        .HasForeignKey("InsurancePolicyId");
+
                     b.HasOne("UstaTakip.Domain.Entities.Vehicle", "Vehicle")
                         .WithMany("RepairJobs")
                         .HasForeignKey("VehicleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("InsurancePolicy");
 
                     b.Navigation("Vehicle");
                 });
@@ -462,8 +482,7 @@ namespace UstaTakip.Infrastructure.Migrations
 
             modelBuilder.Entity("UstaTakip.Domain.Entities.RepairJob", b =>
                 {
-                    b.Navigation("InsurancePayment")
-                        .IsRequired();
+                    b.Navigation("InsurancePayments");
 
                     b.Navigation("RepairJobImages");
                 });

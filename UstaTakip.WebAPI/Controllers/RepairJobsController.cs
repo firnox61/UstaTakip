@@ -15,6 +15,8 @@ namespace UstaTakip.WebAPI.Controllers
         {
             _repairJobService = repairJobService;
         }
+
+        // GET api/repairjobs
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -23,7 +25,17 @@ namespace UstaTakip.WebAPI.Controllers
                 return Ok(result);
             return BadRequest(result);
         }
+        [HttpGet("update-dto/{id}")]
+        public async Task<IActionResult> GetUpdateDto(Guid id)
+        {
+            var result = await _repairJobService.GetUpdateDtoAsync(id);
+            if (result.Success)
+                return Ok(result);
 
+            return NotFound(result);
+        }
+
+        // GET api/repairjobs/{id}
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
@@ -33,6 +45,7 @@ namespace UstaTakip.WebAPI.Controllers
             return NotFound(result);
         }
 
+        // GET api/repairjobs/vehicle/{vehicleId}
         [HttpGet("vehicle/{vehicleId}")]
         public async Task<IActionResult> GetByVehicleId(Guid vehicleId)
         {
@@ -42,6 +55,27 @@ namespace UstaTakip.WebAPI.Controllers
             return NotFound(result);
         }
 
+        // GET api/repairjobs/recent?take=10
+        [HttpGet("recent")]
+        public async Task<IActionResult> GetRecent([FromQuery] int take = 10)
+        {
+            var result = await _repairJobService.GetRecentAsync(take);
+            if (result.Success)
+                return Ok(result);
+            return BadRequest(result);
+        }
+
+        // GET api/repairjobs/monthly-stats
+        [HttpGet("monthly-stats")]
+        public async Task<IActionResult> GetMonthlyStats()
+        {
+            var result = await _repairJobService.GetMonthlyStatsAsync();
+            if (result.Success)
+                return Ok(result);
+            return BadRequest(result);
+        }
+
+        // POST api/repairjobs
         [HttpPost]
         public async Task<IActionResult> Add([FromBody] RepairJobCreateDto dto)
         {
@@ -51,6 +85,7 @@ namespace UstaTakip.WebAPI.Controllers
             return BadRequest(result);
         }
 
+        // PUT api/repairjobs
         [HttpPut]
         public async Task<IActionResult> Update([FromBody] RepairJobUpdateDto dto)
         {
@@ -60,6 +95,7 @@ namespace UstaTakip.WebAPI.Controllers
             return BadRequest(result);
         }
 
+        // DELETE api/repairjobs/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
@@ -68,22 +104,6 @@ namespace UstaTakip.WebAPI.Controllers
                 return Ok(result);
             return BadRequest(result);
         }
-        [HttpGet("recent")]
-        public async Task<IActionResult> GetRecent([FromQuery] int take = 5)
-        {
-            var result = await _repairJobService.GetRecentAsync(take);
-            if (result.Success)
-                return Ok(result);
-            return BadRequest(result);
-        }
-
-        [HttpGet("GetJobMonthly")]
-        public async Task<IActionResult> GetJobMonthly()
-        {
-            var result = await _repairJobService.GetMonthlyStatsAsync();
-            if (result.Success)
-                return Ok(result);
-            return BadRequest(result);
-        }
     }
+
 }

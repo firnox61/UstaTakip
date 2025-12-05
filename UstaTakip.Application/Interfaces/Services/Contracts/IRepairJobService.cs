@@ -12,7 +12,9 @@ namespace UstaTakip.Application.Interfaces.Services.Contracts
     {
         Task<IDataResult<List<RepairJobListDto>>> GetRecentAsync(int take);
         Task<IDataResult<List<RepairJobListDto>>> GetAllAsync();
-        Task<IDataResult<List<MonthlyRepairJobDto>>> GetMonthlyStatsAsync();
+        Task<IDataResult<List<MonthlyRepairJobStatsDto>>> GetMonthlyStatsAsync();
+
+        Task<IDataResult<RepairJobUpdateDto>> GetUpdateDtoAsync(Guid id);
 
         Task<IDataResult<RepairJobListDto>> GetByIdAsync(Guid id);
         Task<IResult> AddAsync(RepairJobCreateDto dto);

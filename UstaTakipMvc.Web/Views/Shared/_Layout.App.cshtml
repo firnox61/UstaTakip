@@ -127,9 +127,28 @@
             }
         });
     </script>
+    <!-- GLOBAL IMAGE MODAL -->
+    <div class="modal fade" id="imageModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content bg-dark text-center position-relative">
 
+                <button type="button" class="btn btn-outline-light position-absolute top-0 end-0 m-3"
+                        data-bs-dismiss="modal">
+                    ×
+                </button>
+
+                <button id="prevBtn" class="btn btn-light position-absolute start-0 top-50 translate-middle-y ms-2">‹</button>
+
+                <img id="modalImage" class="img-fluid mx-auto" style="max-height:80vh;" />
+
+                <button id="nextBtn" class="btn btn-light position-absolute end-0 top-50 translate-middle-y me-2">›</button>
+            </div>
+        </div>
+    </div>
     <!-- Sayfa bazlı scriptler buradan yüklenir -->
     @RenderSection("Scripts", required: false)
+   
+
 
 </body>
 </html>

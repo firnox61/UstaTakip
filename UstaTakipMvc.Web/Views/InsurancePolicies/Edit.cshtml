@@ -2,6 +2,7 @@
 @{
     Layout = "~/Views/Shared/_Layout.App.cshtml";
     ViewData["Title"] = "Poliçe Düzenle";
+
     var vehicles = ViewBag.Vehicles as List<UstaTakipMvc.Web.Controllers.InsurancePoliciesController.VehicleOption> ?? new();
     var selectedVehicle = ViewBag.VehicleSelected as Guid?;
 }
@@ -14,49 +15,66 @@
     <input type="hidden" asp-for="Id" />
 
     <div class="row g-3">
-        <div class="mb-3">
-            <label asp-for="CompanyName" class="form-label">Şirket</label>
+
+        <!-- Şirket -->
+        <div class="col-md-6">
+            <label asp-for="CompanyName" class="form-label">Sigorta Şirketi</label>
             <select asp-for="CompanyName" class="form-select" asp-items="@(new SelectList(ViewBag.Companies))">
                 <option value="">Seçiniz...</option>
             </select>
             <span asp-validation-for="CompanyName" class="text-danger"></span>
         </div>
 
+        <!-- Poliçe No -->
         <div class="col-md-6">
             <label asp-for="PolicyNumber" class="form-label">Poliçe No</label>
             <input asp-for="PolicyNumber" class="form-control" />
         </div>
 
+        <!-- Acenta Kodu -->
         <div class="col-md-6">
-            <label asp-for="StartDate" class="form-label">Başlangıç</label>
+            <label asp-for="AgencyCode" class="form-label">Acenta Kodu</label>
+            <input asp-for="AgencyCode" class="form-control" />
+        </div>
+
+        <!-- Başlangıç -->
+        <div class="col-md-6">
+            <label asp-for="StartDate" class="form-label">Başlangıç Tarihi</label>
             <input asp-for="StartDate" type="date" class="form-control" value="@Model.StartDate.ToString("yyyy-MM-dd")" />
         </div>
 
+        <!-- Bitiş -->
         <div class="col-md-6">
-            <label asp-for="EndDate" class="form-label">Bitiş</label>
+            <label asp-for="EndDate" class="form-label">Bitiş Tarihi</label>
             <input asp-for="EndDate" type="date" class="form-control" value="@Model.EndDate.ToString("yyyy-MM-dd")" />
         </div>
 
+        <!-- Teminat Tutarı -->
         <div class="col-md-6">
-            <label asp-for="CoverageAmount" class="form-label">Tutar</label>
+            <label asp-for="CoverageAmount" class="form-label">Teminat Tutarı</label>
             <input asp-for="CoverageAmount" type="number" step="0.01" class="form-control" />
         </div>
 
+        <!-- Araç -->
         <div class="col-md-6">
-            <label asp-for="VehicleId" class="form-label">Araç</label>
+            <label asp-for="VehicleId" class="form-label">Araç (Plaka)</label>
             <select asp-for="VehicleId" class="form-select">
                 @foreach (var v in vehicles)
                 {
-                    <option value="@v.Id" selected="@(selectedVehicle.HasValue && v.Id == selectedVehicle.Value)">
+                    <option value="@v.Id"
+                            selected="@(selectedVehicle.HasValue && v.Id == selectedVehicle.Value)">
                         @v.Plate
                     </option>
                 }
             </select>
         </div>
+
     </div>
 
     <div class="mt-4 d-flex gap-2">
-        <button type="submit" class="btn btn-primary">Güncelle</button>
+        <button type="submit" class="btn btn-primary">
+            <i class="fa fa-save me-1"></i> Güncelle
+        </button>
         <a asp-action="Index" class="btn btn-outline-secondary">Geri</a>
     </div>
 </form>

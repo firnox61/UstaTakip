@@ -3,15 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
 namespace UstaTakipMvc.Web.Models.RepairJobs
 {
-    public class RepairJobCreateDto 
+    public class RepairJobCreateDto
     {
-        public string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
         public decimal Price { get; set; }
         public DateTime Date { get; set; }
+
         public Guid VehicleId { get; set; }
-        public string Status { get; set; } = "Open"; // varsayılan
+
+        public int InsurancePaymentRate { get; set; } = 100;
+
+        public Guid? InsurancePolicyId { get; set; }
+
+        public string Status { get; set; } = "Open";
     }
 }

@@ -13,7 +13,6 @@ namespace UstaTakipMvc.Web.Controllers
     {
         private readonly HttpClient _api;
 
-        // API genelde camelCase + case-insensitive
         private static readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web)
         {
             PropertyNameCaseInsensitive = true
@@ -21,15 +20,15 @@ namespace UstaTakipMvc.Web.Controllers
 
         public InsurancePoliciesController(IHttpClientFactory factory)
         {
-            // Program.cs: services.AddHttpClient("UstaApi", c => c.BaseAddress = new Uri("http://localhost:5280/api/"));
             _api = factory.CreateClient("UstaApi");
         }
 
-        // LIST
+        // LIST -------------------------------------------------------
         [HttpGet]
         public async Task<IActionResult> Index(CancellationToken ct)
         {
             var resp = await _api.GetAsync("insurancepolicies", ct);
+
             if (!resp.IsSuccessStatusCode)
             {
                 TempData["Error"] = await ReadApiErrorAsync(resp, ct);
@@ -37,21 +36,19 @@ namespace UstaTakipMvc.Web.Controllers
             }
 
             var wrap = await resp.Content.ReadFromJsonAsync<ApiDataResult<List<InsurancePolicyListDto>>>(_json, ct);
-            var list = (wrap?.Success == true ? (wrap.Data ?? new()) : new());
+            var list = wrap?.Success == true ? wrap.Data ?? new() : new();
 
-            if (wrap?.Success == false && !string.IsNullOrWhiteSpace(wrap.Message))
-                TempData["Error"] = wrap.Message;
-
-            await LoadVehicles(ct); // ViewBag.VehicleMap (Guid -> Plate)
+            await LoadVehicles(ct);
             return View(list);
         }
 
-        // CREATE
+        // CREATE -----------------------------------------------------
         [HttpGet]
         public async Task<IActionResult> Create(CancellationToken ct)
         {
             await LoadVehicles(ct);
             ViewBag.Companies = InsuranceCompanies.All;
+
             return View(new InsurancePolicyCreateDto
             {
                 StartDate = DateTime.Today,
@@ -66,16 +63,18 @@ namespace UstaTakipMvc.Web.Controllers
             if (!ModelState.IsValid)
             {
                 await LoadVehicles(ct, dto.VehicleId);
+                ViewBag.Companies = InsuranceCompanies.All;
                 return View(dto);
             }
 
             var resp = await _api.PostAsJsonAsync("insurancepolicies", dto, _json, ct);
-            var ok = await ReadResultEnvelope(resp, ct); // IResult -> ApiDataResult<object>
+            var ok = await ReadResultEnvelope(resp, ct);
 
             if (!ok.success)
             {
                 TempData["Error"] = ok.message ?? await ReadApiErrorAsync(resp, ct);
                 await LoadVehicles(ct, dto.VehicleId);
+                ViewBag.Companies = InsuranceCompanies.All;
                 return View(dto);
             }
 
@@ -83,25 +82,27 @@ namespace UstaTakipMvc.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // EDIT
+        // EDIT -------------------------------------------------------
         [HttpGet]
         public async Task<IActionResult> Edit(Guid id, CancellationToken ct)
         {
             var resp = await _api.GetAsync($"insurancepolicies/{id}", ct);
+
             if (!resp.IsSuccessStatusCode)
             {
                 TempData["Error"] = await ReadApiErrorAsync(resp, ct);
                 return RedirectToAction(nameof(Index));
             }
 
-            // 1) Tercihen doğrudan UpdateDto dönüyorsa:
+            // API doğrudan UpdateDto döndürüyorsa:
             var wrapUpd = await resp.Content.ReadFromJsonAsync<ApiDataResult<InsurancePolicyUpdateDto>>(_json, ct);
             InsurancePolicyUpdateDto? model = wrapUpd?.Data;
 
-            // 2) Bazı API'lerde ListDto döner; o zaman map'leyelim
+            // Eğer API ListDto döndürdüyse → UpdateDto'ya dönüştür
             if (model is null)
             {
                 var wrapList = await resp.Content.ReadFromJsonAsync<ApiDataResult<InsurancePolicyListDto>>(_json, ct);
+
                 if (wrapList?.Success != true || wrapList.Data is null)
                 {
                     TempData["Error"] = wrapList?.Message ?? wrapUpd?.Message ?? "Poliçe bulunamadı.";
@@ -109,11 +110,13 @@ namespace UstaTakipMvc.Web.Controllers
                 }
 
                 var d = wrapList.Data;
+
                 model = new InsurancePolicyUpdateDto
                 {
                     Id = d.Id,
                     CompanyName = d.CompanyName,
                     PolicyNumber = d.PolicyNumber,
+                    AgencyCode = d.AgencyCode,
                     StartDate = d.StartDate,
                     EndDate = d.EndDate,
                     CoverageAmount = d.CoverageAmount,
@@ -123,6 +126,7 @@ namespace UstaTakipMvc.Web.Controllers
 
             await LoadVehicles(ct, model.VehicleId);
             ViewBag.Companies = InsuranceCompanies.All;
+
             return View(model);
         }
 
@@ -133,17 +137,18 @@ namespace UstaTakipMvc.Web.Controllers
             if (!ModelState.IsValid)
             {
                 await LoadVehicles(ct, dto.VehicleId);
+                ViewBag.Companies = InsuranceCompanies.All;
                 return View(dto);
             }
 
-            // API'niz PUT'ta route id İSTEMİYOR -> sadece body
             var resp = await _api.PutAsJsonAsync("insurancepolicies", dto, _json, ct);
-            var ok = await ReadResultEnvelope(resp, ct); // IResult -> ApiDataResult<object>
+            var ok = await ReadResultEnvelope(resp, ct);
 
             if (!ok.success)
             {
                 TempData["Error"] = ok.message ?? await ReadApiErrorAsync(resp, ct);
                 await LoadVehicles(ct, dto.VehicleId);
+                ViewBag.Companies = InsuranceCompanies.All;
                 return View(dto);
             }
 
@@ -151,13 +156,13 @@ namespace UstaTakipMvc.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // DELETE
+        // DELETE -----------------------------------------------------
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
         {
             var resp = await _api.DeleteAsync($"insurancepolicies/{id}", ct);
-            var ok = await ReadResultEnvelope(resp, ct); // IResult -> ApiDataResult<object>
+            var ok = await ReadResultEnvelope(resp, ct);
 
             if (!ok.success)
             {
@@ -169,23 +174,22 @@ namespace UstaTakipMvc.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // ----------------- helpers -----------------
+        // HELPERS ----------------------------------------------------
 
-        /// Araç seçeneklerini (Id, Plate) ve VehicleId->Plate haritasını ViewBag'e yükler.
         private async Task LoadVehicles(CancellationToken ct, Guid? selected = null)
         {
             var resp = await _api.GetAsync("vehicles/list", ct);
+
             if (!resp.IsSuccessStatusCode)
             {
                 ViewBag.Vehicles = new List<VehicleOption>();
                 ViewBag.VehicleSelected = selected;
                 ViewBag.VehicleMap = new Dictionary<Guid, string>();
-                TempData["Error"] = "Araç listesi alınamadı: " + await ReadApiErrorAsync(resp, ct);
                 return;
             }
 
             var wrapper = await resp.Content.ReadFromJsonAsync<ApiDataResult<List<VehicleListDto>>>(_json, ct);
-            var vehicles = (wrapper?.Success == true ? (wrapper.Data ?? new()) : new());
+            var vehicles = wrapper?.Success == true ? wrapper.Data ?? new() : new();
 
             var opts = vehicles.Select(v => new VehicleOption
             {
@@ -198,55 +202,44 @@ namespace UstaTakipMvc.Web.Controllers
             ViewBag.VehicleMap = opts.ToDictionary(v => v.Id, v => v.Plate);
         }
 
-        /// API hata gövdesini okur. ProblemDetails varsa onu; yoksa IResult sarmalını; o da yoksa raw döndürür.
         private static async Task<string> ReadApiErrorAsync(HttpResponseMessage resp, CancellationToken ct)
         {
-            // 1) ProblemDetails dene
             try
             {
                 var problem = await resp.Content.ReadFromJsonAsync<ProblemDetails>(cancellationToken: ct);
                 if (problem != null)
                 {
                     var title = string.IsNullOrWhiteSpace(problem.Title) ? "Hata" : problem.Title;
-                    var detail = string.IsNullOrWhiteSpace(problem.Detail) ? "" : " - " + problem.Detail;
+                    var detail = string.IsNullOrWhiteSpace(problem.Detail) ? "" : $" - {problem.Detail}";
                     return $"API {(int)resp.StatusCode} {title}{detail}";
                 }
             }
-            catch { /* yut */ }
+            catch { }
 
-            // 2) ApiDataResult<object> dene (IResult/IDataResult)
             try
             {
                 var wrap = await resp.Content.ReadFromJsonAsync<ApiDataResult<object>>(_json, ct);
                 if (wrap != null && !string.IsNullOrWhiteSpace(wrap.Message))
-                    return $"API {(int)resp.StatusCode}: {wrap.Message}";
+                    return wrap.Message;
             }
-            catch { /* yut */ }
+            catch { }
 
-            // 3) raw
-            var raw = await resp.Content.ReadAsStringAsync(ct);
-            return string.IsNullOrWhiteSpace(raw)
-                ? $"API {(int)resp.StatusCode} hatası (boş içerik)."
-                : raw;
+            return await resp.Content.ReadAsStringAsync(ct);
         }
 
-        /// IResult/IDataResult (success, message) okumak için ortak yardımcı
         private static async Task<(bool success, string? message)> ReadResultEnvelope(HttpResponseMessage resp, CancellationToken ct)
         {
-            var body = await resp.Content.ReadAsStringAsync(ct);
             try
             {
-                var wrap = JsonSerializer.Deserialize<ApiDataResult<object>>(body, _json);
+                var wrap = JsonSerializer.Deserialize<ApiDataResult<object>>(await resp.Content.ReadAsStringAsync(ct), _json);
                 if (wrap != null)
                     return (wrap.Success, wrap.Message);
             }
-            catch { /* yut */ }
+            catch { }
 
-            // JSON değilse / farklı şema ise status code'a göre karar
             return (resp.IsSuccessStatusCode, null);
         }
 
-        // View için minimal araç DTO'su
         public class VehicleOption
         {
             public Guid Id { get; set; }

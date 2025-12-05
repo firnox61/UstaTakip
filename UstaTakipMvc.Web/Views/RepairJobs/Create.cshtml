@@ -1,70 +1,67 @@
 ﻿@model UstaTakipMvc.Web.Models.RepairJobs.RepairJobCreateDto
-@using Microsoft.AspNetCore.Mvc.Rendering
 
 @{
     Layout = "~/Views/Shared/_Layout.App.cshtml";
-    ViewData["Title"] = "Yeni Tamir/Bakım";
-
-    var statusSelect = ViewBag.StatusOptions as List<SelectListItem> ?? new();
+    ViewData["Title"] = "Yeni Tamir / Bakım";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="m-0"><i class="fa fa-wrench me-2"></i>Yeni Tamir/Bakım</h4>
-    <a asp-action="Index" class="btn btn-outline-secondary">
-        <i class="fa fa-arrow-left me-1"></i> Listeye Dön
-    </a>
-</div>
+<h4>Yeni Tamir / Bakım Kaydı</h4>
+<hr />
 
-<div class="card shadow-sm">
-    <div class="card-body">
-        <form asp-action="Create" method="post" novalidate>
-            @Html.AntiForgeryToken()
-            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
 
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label asp-for="VehicleId" class="form-label">Araç</label>
-                    <select asp-for="VehicleId" class="form-select" asp-items="ViewBag.VehicleOptions">
-                        <option value="">Seçiniz...</option>
-                    </select>
-                    <span asp-validation-for="VehicleId" class="text-danger"></span>
-                </div>
+    <div class="row g-3">
 
-                <div class="col-md-6">
-                    <label asp-for="Status" class="form-label">Durum</label>
-                    <select asp-for="Status" class="form-select" asp-items="statusSelect">
-                        <option value="">Seçiniz...</option>
-                    </select>
-                    <span asp-validation-for="Status" class="text-danger"></span>
-                </div>
+        <div class="col-md-6">
+            <label asp-for="VehicleId" class="form-label">Araç</label>
+            <select asp-for="VehicleId" class="form-select" asp-items="ViewBag.VehicleOptions"></select>
+            <span asp-validation-for="VehicleId" class="text-danger"></span>
+        </div>
 
-                <div class="col-md-12">
-                    <label asp-for="Description" class="form-label">İş Açıklaması</label>
-                    <textarea asp-for="Description" class="form-control" rows="3"></textarea>
-                    <span asp-validation-for="Description" class="text-danger"></span>
-                </div>
+        <div class="col-md-6">
+            <label asp-for="InsurancePolicyId" class="form-label">Sigorta Poliçesi (Opsiyonel)</label>
+            <select asp-for="InsurancePolicyId" class="form-select" asp-items="ViewBag.PolicyOptions">
+                <option value="">— Seçiniz —</option>
+            </select>
+            <span asp-validation-for="InsurancePolicyId" class="text-danger"></span>
+        </div>
 
-                <div class="col-md-4">
-                    <label asp-for="Price" class="form-label">Fiyat</label>
-                    <input asp-for="Price" type="number" step="0.01" class="form-control" />
-                    <span asp-validation-for="Price" class="text-danger"></span>
-                </div>
+        <div class="col-md-12">
+            <label asp-for="Description" class="form-label">Açıklama</label>
+            <input asp-for="Description" class="form-control" />
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
 
-                <div class="col-md-4">
-                    <label asp-for="Date" class="form-label">Tarih</label>
-                    <input asp-for="Date" type="datetime-local" class="form-control" />
-                    <span asp-validation-for="Date" class="text-danger"></span>
-                </div>
+        <div class="col-md-4">
+            <label asp-for="Price" class="form-label">Ücret</label>
+            <input asp-for="Price" type="number" class="form-control" step="0.01" />
+            <span asp-validation-for="Price" class="text-danger"></span>
+        </div>
 
-                <div class="col-md-4 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fa-regular fa-floppy-disk me-1"></i> Kaydet
-                    </button>
-                </div>
-            </div>
-        </form>
+        <div class="col-md-4">
+            <label asp-for="Date" class="form-label">Tarih</label>
+            <input asp-for="Date" type="date" class="form-control" />
+            <span asp-validation-for="Date" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-4">
+            <label asp-for="InsurancePaymentRate" class="form-label">Sigorta Karşılama Oranı (%)</label>
+            <input asp-for="InsurancePaymentRate" type="number" min="0" max="100" class="form-control" />
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="Status" class="form-label">Durum</label>
+            <select asp-for="Status" class="form-select" asp-items="ViewBag.StatusOptions"></select>
+        </div>
+
     </div>
-</div>
+
+    <div class="mt-4 d-flex gap-2">
+        <button class="btn btn-primary">Kaydet</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">İptal</a>
+    </div>
+</form>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

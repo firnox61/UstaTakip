@@ -11,8 +11,13 @@ namespace UstaTakip.Application.Repositories
     {
         Task<List<InsurancePayment>> GetAllWithDetailsAsync();
         Task<InsurancePayment?> GetByIdWithDetailsAsync(Guid id);
-        Task<InsurancePayment?> GetByRepairJobIdAsync(Guid repairJobId);
+
+        // Bir tamir işine ait tüm ödemeler
+        Task<List<InsurancePayment>> GetByRepairJobIdAsync(Guid repairJobId);
+
+        // Bir poliçeye ait tüm ödemeler
         Task<List<InsurancePayment>> GetByPolicyIdWithDetailsAsync(Guid insurancePolicyId);
     }
+
 
 }

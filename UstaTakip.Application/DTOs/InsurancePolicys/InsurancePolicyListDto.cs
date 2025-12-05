@@ -7,15 +7,22 @@ using UstaTakip.Core.Abstractions;
 
 namespace UstaTakip.Application.DTOs.InsurancePolicys
 {
-    public class InsurancePolicyListDto:IDto
+    public class InsurancePolicyListDto
     {
         public Guid Id { get; set; }
-        public string CompanyName { get; set; }
-        public string PolicyNumber { get; set; }
+
+        public string CompanyName { get; set; } = string.Empty;
+        public string PolicyNumber { get; set; } = string.Empty;
+        public string AgencyCode { get; set; } = string.Empty;
+
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
+
         public decimal CoverageAmount { get; set; }
+
         public Guid VehicleId { get; set; }
+        public string VehiclePlate { get; set; } = ""; // AutoMapper'da dolduruluyor
     }
+
 
 }

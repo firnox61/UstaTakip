@@ -69,6 +69,7 @@ namespace UstaTakip.WebAPI.Controllers
                 return Ok(result);
             return BadRequest(result);
         }
+
         [HttpGet("expiring")]
         public async Task<IActionResult> GetExpiring([FromQuery] int days = 30, [FromQuery] int take = 5)
         {
@@ -87,6 +88,7 @@ namespace UstaTakip.WebAPI.Controllers
                 return Ok(result);
             return BadRequest(result);
         }
-
     }
+
+
 }

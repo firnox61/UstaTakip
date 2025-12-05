@@ -8,14 +8,23 @@ using UstaTakip.Domain.Enums;
 
 namespace UstaTakip.Application.DTOs.RepairJobs
 {
-    public class RepairJobListDto:IDto
+    public class RepairJobListDto
     {
         public Guid Id { get; set; }
-        public string Description { get; set; }
+
+        public string Description { get; set; } = string.Empty;
         public decimal Price { get; set; }
         public DateTime Date { get; set; }
-        public Guid VehicleId { get; set; }
-        public string VehiclePlate { get; set; }
-        public string Status { get; set; } = "Open"; // varsayılan
+
+        public string Status { get; set; } = "Open";
+
+        public int InsurancePaymentRate { get; set; }
+
+        public string VehiclePlate { get; set; } = string.Empty;
+
+        public string? CompanyName { get; set; }
+        public string? PolicyNumber { get; set; }
+        public string? AgencyCode { get; set; }
     }
+
 }

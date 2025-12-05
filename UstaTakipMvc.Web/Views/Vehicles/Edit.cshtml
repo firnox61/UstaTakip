@@ -26,3 +26,98 @@
 </form>
 
 @await Html.PartialAsync("_VehicleImages", images)
+@section Scripts {
+    <script>
+        // ==============================
+        //     RESİM LİSTESİ OLUŞTUR
+        // ==============================
+        let images = Array.from(document.querySelectorAll('.gallery-item'))
+            .map(img => img.dataset.full);
+
+        let currentIndex = 0;
+
+        const modalImage = document.getElementById("modalImage");
+        const imgModal = new bootstrap.Modal(document.getElementById("imageModal"));
+
+
+        // ==============================
+        //       RESİM TIKLAMA
+        // ==============================
+        document.querySelectorAll('.gallery-item').forEach(img => {
+            img.addEventListener("click", () => {
+                currentIndex = parseInt(img.dataset.index);
+                openImage(currentIndex);
+            });
+        });
+
+
+        // ==============================
+        //         MODAL AÇMA
+        // ==============================
+        function openImage(index) {
+            modalImage.src = images[index];
+            resetZoom();
+            imgModal.show();
+        }
+
+
+        // ==============================
+        //      NEXT / PREV BUTONLARI
+        // ==============================
+        document.getElementById("prevBtn").onclick = () => {
+            currentIndex = (currentIndex - 1 + images.length) % images.length;
+            openImage(currentIndex);
+        };
+
+        document.getElementById("nextBtn").onclick = () => {
+            currentIndex = (currentIndex + 1) % images.length;
+            openImage(currentIndex);
+        };
+
+
+        // ==============================
+        //          ZOOM KODU
+        // ==============================
+        let scale = 1;
+        let posX = 0, posY = 0;
+        let isDragging = false;
+        let startX, startY;
+
+        function applyTransform() {
+            modalImage.style.transform =
+                `translate(${posX}px, ${posY}px) scale(${scale})`;
+        }
+
+        function resetZoom() {
+            scale = 1;
+            posX = 0;
+            posY = 0;
+            applyTransform();
+        }
+
+        // Mouse wheel zoom
+        modalImage.addEventListener("wheel", (e) => {
+            e.preventDefault();
+            if (e.deltaY < 0 && scale < 5) scale += 0.1;
+            if (e.deltaY > 0 && scale > 1) scale -= 0.1;
+            applyTransform();
+        });
+
+        // Mouse drag
+        modalImage.addEventListener("mousedown", (e) => {
+            isDragging = true;
+            startX = e.clientX - posX;
+            startY = e.clientY - posY;
+        });
+
+        modalImage.addEventListener("mousemove", (e) => {
+            if (!isDragging) return;
+            posX = e.clientX - startX;
+            posY = e.clientY - startY;
+            applyTransform();
+        });
+
+        modalImage.addEventListener("mouseup", () => isDragging = false);
+        modalImage.addEventListener("mouseleave", () => isDragging = false);
+    </script>
+}

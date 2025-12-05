@@ -195,16 +195,19 @@
     Debug: Aylık istatistik kayıt sayısı = @Model.MonthlyStats.Count
 </p>
 
-@section Scripts {
+ @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
         // Etiketler (Ay isimleri)
-        const labels = @Html.Raw(Json.Serialize(Model.MonthlyStats.Select(x => x.MonthName)));
+              const labels = @Html.Raw(
+                    Json.Serialize(Model.MonthlyStats.Select(x => $"{x.Month:00}.{x.Year}"))
+            );
 
-        const openData = @Html.Raw(Json.Serialize(Model.MonthlyStats.Select(x => x.Open)));
-        const progressData = @Html.Raw(Json.Serialize(Model.MonthlyStats.Select(x => x.InProgress)));
-        const completedData = @Html.Raw(Json.Serialize(Model.MonthlyStats.Select(x => x.Completed)));
+    const openData = @Html.Raw(Json.Serialize(Model.MonthlyStats.Select(x => x.Open)));
+    const progressData = @Html.Raw(Json.Serialize(Model.MonthlyStats.Select(x => x.InProgress)));
+    const completedData = @Html.Raw(Json.Serialize(Model.MonthlyStats.Select(x => x.Completed)));
+
 
         const ctx = document.getElementById('repairChart');
 
@@ -240,3 +243,4 @@
     </script>
 }
 
+ 

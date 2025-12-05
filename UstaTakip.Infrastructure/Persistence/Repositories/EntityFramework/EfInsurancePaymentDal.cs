@@ -18,6 +18,7 @@ namespace UstaTakip.Infrastructure.Persistence.Repositories.EntityFramework
         {
             return await _context.InsurancePayments
                 .Include(p => p.RepairJob)
+                    .ThenInclude(r => r.Vehicle)
                 .Include(p => p.InsurancePolicy)
                 .ToListAsync();
         }
@@ -26,26 +27,32 @@ namespace UstaTakip.Infrastructure.Persistence.Repositories.EntityFramework
         {
             return await _context.InsurancePayments
                 .Include(p => p.RepairJob)
+                    .ThenInclude(r => r.Vehicle)
                 .Include(p => p.InsurancePolicy)
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
 
-        public async Task<InsurancePayment?> GetByRepairJobIdAsync(Guid repairJobId)
+        public async Task<List<InsurancePayment>> GetByRepairJobIdAsync(Guid repairJobId)
         {
             return await _context.InsurancePayments
                 .Include(p => p.RepairJob)
+                    .ThenInclude(r => r.Vehicle)
                 .Include(p => p.InsurancePolicy)
-                .FirstOrDefaultAsync(p => p.RepairJobId == repairJobId);
+                .Where(p => p.RepairJobId == repairJobId)
+                .ToListAsync();
         }
 
         public async Task<List<InsurancePayment>> GetByPolicyIdWithDetailsAsync(Guid insurancePolicyId)
         {
             return await _context.InsurancePayments
                 .Include(p => p.RepairJob)
+                    .ThenInclude(r => r.Vehicle)
                 .Include(p => p.InsurancePolicy)
                 .Where(p => p.InsurancePolicyId == insurancePolicyId)
                 .ToListAsync();
         }
+
     }
+
 
 }

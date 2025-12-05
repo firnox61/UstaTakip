@@ -10,16 +10,21 @@ namespace UstaTakip.Domain.Entities
     public class InsurancePolicy : IEntity
     {
         public Guid Id { get; set; }
-        public string CompanyName { get; set; } = string.Empty; // Allianz, Axa vs.
+
+        public string CompanyName { get; set; } = string.Empty;  // Allianz, AXA vb.
+        public string AgencyCode { get; set; } = string.Empty;   // Acentelik Numarası
         public string PolicyNumber { get; set; } = string.Empty;
+
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
+        public decimal CoverageAmount { get; set; }
 
-        public decimal CoverageAmount { get; set; } // Maksimum ödeme limiti
         public Guid VehicleId { get; set; }
         public Vehicle Vehicle { get; set; }
 
-        public ICollection<InsurancePayment> InsurancePayments { get; set; } = new List<InsurancePayment>();
+        public ICollection<InsurancePayment> InsurancePayments { get; set; }
+            = new List<InsurancePayment>();
     }
+
 
 }

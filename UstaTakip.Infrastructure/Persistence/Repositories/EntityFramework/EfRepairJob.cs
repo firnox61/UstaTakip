@@ -18,35 +18,49 @@ namespace UstaTakip.Infrastructure.Persistence.Repositories.EntityFramework
         public async Task<List<RepairJob>> GetAllWithVehicleAsync()
         {
             return await _context.RepairJobs
-                .Include(r => r.Vehicle) // plaka için eager load
+                .Include(r => r.Vehicle)
+                .Include(r => r.InsurancePolicy)
+                .Include(r => r.InsurancePayments)
                 .AsNoTracking()
                 .ToListAsync();
+        }
+        public async Task<RepairJob?> GetByIdWithVehicleAndPolicyAsync(Guid id)
+        {
+            return await _context.RepairJobs
+                .Include(r => r.Vehicle)
+                .Include(r => r.InsurancePolicy)
+                .AsNoTracking()
+                .SingleOrDefaultAsync(r => r.Id == id);
         }
 
         public async Task<RepairJob?> GetByIdWithVehicleAsync(Guid id)
         {
             return await _context.RepairJobs
                 .Include(r => r.Vehicle)
+                .Include(r => r.InsurancePolicy)
+                .Include(r => r.InsurancePayments)
                 .AsNoTracking()
                 .SingleOrDefaultAsync(r => r.Id == id);
         }
+
         public async Task<List<RepairJob>> GetRecentWithVehicleAsync(int take)
         {
-            take = Math.Clamp(take, 1, 100);
             return await _context.RepairJobs
                 .Include(r => r.Vehicle)
+                .Include(r => r.InsurancePolicy)
+                .Include(r => r.InsurancePayments)
                 .AsNoTracking()
                 .OrderByDescending(r => r.Date)
-                .Take(take)
+                .Take(Math.Clamp(take, 1, 100))
                 .ToListAsync();
         }
 
-        public async Task<List<MonthlyRepairJobDto>> GetMonthlyStatsAsync()
+        public async Task<List<MonthlyRepairJobStatsDto>> GetMonthlyStatsAsync()
         {
             return await _context.RepairJobs
                 .AsNoTracking()
                 .GroupBy(j => new { j.Date.Year, j.Date.Month })
-                .Select(g => new MonthlyRepairJobDto
+                .Select(g => new MonthlyRepairJobStatsDto
                 {
                     Year = g.Key.Year,
                     Month = g.Key.Month,
@@ -59,5 +73,7 @@ namespace UstaTakip.Infrastructure.Persistence.Repositories.EntityFramework
                 .ThenBy(x => x.Month)
                 .ToListAsync();
         }
+
     }
+
 }

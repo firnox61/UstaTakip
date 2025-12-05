@@ -1,76 +1,161 @@
 ﻿@model List<UstaTakipMvc.Web.Models.RepairJobs.RepairJobListDto>
+
 @{
     Layout = "~/Views/Shared/_Layout.App.cshtml";
-    ViewData["Title"] = "Tamir/Bakım Kayıtları";
+    ViewData["Title"] = "Tamir / Bakım Kayıtları";
+
+    string SortIcon(string field)
+    {
+        if (ViewBag.SortField == field)
+        {
+            return ViewBag.SortOrder == "asc" ? "▲" : "▼";
+        }
+        return "";
+    }
 }
 
 @functions {
-    string SortUrl(string field)
+    string StatusText(string s)
     {
-        var currentField = ViewBag.SortField as string;
-        var currentOrder = ViewBag.SortOrder as string ?? "asc";
+        return s switch
+        {
+            "Open" => "Açık",
+            "InProgress" => "Yapılıyor",
+            "Completed" => "Tamamlandı",
+            "Cancelled" => "İptal",
+            _ => s
+        };
+    }
 
-        var nextOrder = (currentField == field && currentOrder == "asc") ? "desc" : "asc";
-
-        return Url.Action("Index", new { sortField = field, sortOrder = nextOrder });
+    string StatusBadge(string s)
+    {
+        return s switch
+        {
+            "Open" => "<span class='badge bg-secondary'>Açık</span>",
+            "InProgress" => "<span class='badge bg-warning text-dark'>Yapılıyor</span>",
+            "Completed" => "<span class='badge bg-success'>Tamamlandı</span>",
+            "Cancelled" => "<span class='badge bg-danger'>İptal</span>",
+            _ => s
+        };
     }
 }
+
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="m-0">Tamir/Bakım Kayıtları</h4>
+    <h4 class="m-0">Tamir / Bakım Kayıtları</h4>
     <a asp-action="Create" class="btn btn-primary">
         <i class="fa fa-plus me-1"></i> Yeni Kayıt
     </a>
 </div>
 
-<table class="table table-hover align-middle">
+<!-- 🔍 Search Bar -->
+<div class="row g-2 mb-3">
+    <div class="col-12 col-md-6 ms-auto">
+        <div class="input-group">
+            <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+            <input id="q" type="search" class="form-control" placeholder="Araç, açıklama, sigorta, durum ara...">
+        </div>
+    </div>
+</div>
+
+<table id="jobsTable" class="table table-hover align-middle">
     <thead class="table-light">
         <tr>
-           <th><a href="@SortUrl("Plate")">Plaka</a></th>
-<th><a href="@SortUrl("Description")">İş Açıklaması</a></th>
-<th><a href="@SortUrl("Price")">Fiyat</a></th>
-<th><a href="@SortUrl("Date")">Tarih</a></th>
-<th><a href="@SortUrl("Status")">Durum</a></th>
+            <th>
+                <a asp-action="Index" asp-route-sortField="Plate" asp-route-sortOrder="@(ViewBag.SortOrder == "asc" ? "desc" : "asc")">
+                    Araç @SortIcon("Plate")
+                </a>
+            </th>
+            <th>
+                <a asp-action="Index" asp-route-sortField="Description" asp-route-sortOrder="@(ViewBag.SortOrder == "asc" ? "desc" : "asc")">
+                    Açıklama @SortIcon("Description")
+                </a>
+            </th>
+            <th>
+                <a asp-action="Index" asp-route-sortField="Price" asp-route-sortOrder="@(ViewBag.SortOrder == "asc" ? "desc" : "asc")">
+                    Ücret @SortIcon("Price")
+                </a>
+            </th>
+            <th>
+                <a asp-action="Index" asp-route-sortField="Date" asp-route-sortOrder="@(ViewBag.SortOrder == "asc" ? "desc" : "asc")">
+                    Tarih @SortIcon("Date")
+                </a>
+            </th>
+            <th>Sigorta Oranı</th>
+            <th>Sigorta</th>
+            <th>
+                <a asp-action="Index" asp-route-sortField="Status" asp-route-sortOrder="@(ViewBag.SortOrder == "asc" ? "desc" : "asc")">
+                    Durum @SortIcon("Status")
+                </a>
+            </th>
             <th style="width:140px;"></th>
         </tr>
     </thead>
+
     <tbody>
-        @foreach (var x in Model)
+        @foreach (var r in Model)
         {
-            <tr>
-                <td>@x.VehiclePlate</td>
-                <td>@x.Description</td>
-                <td>@x.Price.ToString("C0")</td>
-                <td>@x.Date.ToString("dd.MM.yyyy")</td>
-                <td>
-                    <span class="badge bg-@(x.Status switch {
-                        "Open" => "danger",
-                        "InProgress" => "warning",
-                        "Completed" => "success",
-                        "Cancelled" => "secondary",
-                        _ => "secondary"
-                    })">@x.Status</span>
+            <tr data-row>
+                <td data-col>@r.VehiclePlate</td>
+                <td data-col>@r.Description</td>
+                <td data-col>@r.Price.ToString("C2")</td>
+                <td data-col>@r.Date.ToString("dd.MM.yyyy")</td>
+                <td data-col>%@r.InsurancePaymentRate</td>
+
+                <td data-col>
+                    @if (!string.IsNullOrWhiteSpace(r.CompanyName))
+                    {
+                        <span>@r.CompanyName - @r.PolicyNumber</span>
+                    }
+                    else
+                    {
+                        <span class="text-muted">Yok</span>
+                    }
                 </td>
+
+                <td data-col>@Html.Raw(StatusBadge(r.Status))</td>
+
                 <td class="text-end">
-                    <a asp-action="Edit" asp-route-id="@x.Id" class="btn btn-sm btn-outline-secondary">
+                    <a asp-action="Edit" asp-route-id="@r.Id" class="btn btn-sm btn-outline-secondary">
                         <i class="fa fa-pen"></i>
                     </a>
-                   <form asp-action="Delete" method="post" class="d-inline">
-    @Html.AntiForgeryToken()
-    <input type="hidden" name="id" value="@x.Id" />
 
-    <button type="submit"
-            class="btn btn-sm btn-outline-danger"
-            onclick="return confirm('Silinsin mi?')">
-        <i class="fa fa-trash"></i>
-    </button>
-</form>
-
+                    <form asp-action="Delete" asp-route-id="@r.Id" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                                onclick="return confirm('Silinsin mi?')">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </form>
                 </td>
             </tr>
         }
+
         @if (!Model.Any())
         {
-            <tr><td colspan="6" class="text-muted text-center py-4">Kayıt bulunamadı.</td></tr>
+            <tr>
+                <td colspan="8" class="text-center text-muted py-4">Kayıt bulunamadı.</td>
+            </tr>
         }
     </tbody>
 </table>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // 🔍 Client-side arama
+            const q = document.getElementById("q");
+            const rows = Array.from(document.querySelectorAll("#jobsTable tbody tr[data-row]"));
+
+            q?.addEventListener("input", function () {
+                const needle = (q.value || "").toLowerCase();
+                rows.forEach(tr => {
+                    const hay = Array.from(tr.querySelectorAll("[data-col]"))
+                                     .map(td => (td.textContent || "").toLowerCase())
+                                     .join(" ");
+                    tr.style.display = hay.includes(needle) ? "" : "none";
+                });
+            });
+        });
+    </script>
+}

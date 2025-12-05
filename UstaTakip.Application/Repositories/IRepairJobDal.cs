@@ -13,7 +13,8 @@ namespace UstaTakip.Application.Repositories
         Task<List<RepairJob>> GetAllWithVehicleAsync();
         Task<RepairJob?> GetByIdWithVehicleAsync(Guid id);
         Task<List<RepairJob>> GetRecentWithVehicleAsync(int take);
-        Task<List<MonthlyRepairJobDto>> GetMonthlyStatsAsync();
+        Task<List<MonthlyRepairJobStatsDto>> GetMonthlyStatsAsync();
+        Task<RepairJob?> GetByIdWithVehicleAndPolicyAsync(Guid id);
 
     }
 }

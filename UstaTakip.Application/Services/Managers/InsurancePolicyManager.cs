@@ -16,65 +16,78 @@ using UstaTakip.Domain.Entities;
 
 namespace UstaTakip.Application.Services.Managers
 {
-   public class InsurancePolicyManager : IInsurancePolicyService
-{
-    private readonly IInsurancePolicyDal _insurancePolicyDal;
-    private readonly IMapper _mapper;
-
-    public InsurancePolicyManager(IInsurancePolicyDal insurancePolicyDal, IMapper mapper)
+    public class InsurancePolicyManager : IInsurancePolicyService
     {
-        _insurancePolicyDal = insurancePolicyDal;
-        _mapper = mapper;
-    }
+        private readonly IInsurancePolicyDal _insurancePolicyDal;
+        private readonly IMapper _mapper;
 
-    [ValidationAspect(typeof(InsurancePolicyCreateDtoValidator))]
-    [TransactionScopeAspect]
-    public async Task<IResult> AddAsync(InsurancePolicyCreateDto dto)
-    {
-        var entity = _mapper.Map<InsurancePolicy>(dto);
-        await _insurancePolicyDal.AddAsync(entity);
-        return new SuccessResult("Sigorta poliçesi eklendi.");
-    }
+        public InsurancePolicyManager(IInsurancePolicyDal insurancePolicyDal, IMapper mapper)
+        {
+            _insurancePolicyDal = insurancePolicyDal;
+            _mapper = mapper;
+        }
 
-    [ValidationAspect(typeof(InsurancePolicyUpdateDtoValidator))]
-    [TransactionScopeAspect]
-    public async Task<IResult> UpdateAsync(InsurancePolicyUpdateDto dto)
-    {
-        var entity = _mapper.Map<InsurancePolicy>(dto);
-        await _insurancePolicyDal.UpdateAsync(entity);
-        return new SuccessResult("Sigorta poliçesi güncellendi.");
-    }
+        [ValidationAspect(typeof(InsurancePolicyCreateDtoValidator))]
+        [TransactionScopeAspect]
+        public async Task<IResult> AddAsync(InsurancePolicyCreateDto dto)
+        {
+            var entity = _mapper.Map<InsurancePolicy>(dto);
+            await _insurancePolicyDal.AddAsync(entity);
+            return new SuccessResult("Sigorta poliçesi eklendi.");
+        }
 
-    [TransactionScopeAspect]
-    public async Task<IResult> DeleteAsync(Guid id)
-    {
-        await _insurancePolicyDal.DeleteAsync(new InsurancePolicy { Id = id });
-        return new SuccessResult("Sigorta poliçesi silindi.");
-    }
+        [ValidationAspect(typeof(InsurancePolicyUpdateDtoValidator))]
+        [TransactionScopeAspect]
+        public async Task<IResult> UpdateAsync(InsurancePolicyUpdateDto dto)
+        {
+            var entity = await _insurancePolicyDal.GetAsync(x => x.Id == dto.Id);
+            if (entity == null)
+                return new ErrorResult("Poliçe bulunamadı.");
 
-    public async Task<IDataResult<List<InsurancePolicyListDto>>> GetAllAsync()
-    {
-        var list = await _insurancePolicyDal.GetAllWithDetailsAsync();
-        var dto = _mapper.Map<List<InsurancePolicyListDto>>(list);
-        return new SuccessDataResult<List<InsurancePolicyListDto>>(dto);
-    }
+            _mapper.Map(dto, entity);
+            await _insurancePolicyDal.UpdateAsync(entity);
 
-    public async Task<IDataResult<InsurancePolicyListDto>> GetByIdAsync(Guid id)
-    {
-        var entity = await _insurancePolicyDal.GetByIdWithDetailsAsync(id);
-        if (entity == null)
-            return new ErrorDataResult<InsurancePolicyListDto>("Poliçe bulunamadı.");
-        
-        var dto = _mapper.Map<InsurancePolicyListDto>(entity);
-        return new SuccessDataResult<InsurancePolicyListDto>(dto);
-    }
+            return new SuccessResult("Sigorta poliçesi güncellendi.");
+        }
 
-    public async Task<IDataResult<List<InsurancePolicyListDto>>> GetByVehicleIdAsync(Guid vehicleId)
-    {
-        var list = await _insurancePolicyDal.GetByVehicleIdWithDetailsAsync(vehicleId);
-        var dto = _mapper.Map<List<InsurancePolicyListDto>>(list);
-        return new SuccessDataResult<List<InsurancePolicyListDto>>(dto);
-    }
+        [TransactionScopeAspect]
+        public async Task<IResult> DeleteAsync(Guid id)
+        {
+            var entity = await _insurancePolicyDal.GetAsync(x => x.Id == id);
+            if (entity == null)
+                return new ErrorResult("Poliçe bulunamadı.");
+
+            await _insurancePolicyDal.DeleteAsync(entity);
+            return new SuccessResult("Sigorta poliçesi silindi.");
+        }
+
+        public async Task<IDataResult<List<InsurancePolicyListDto>>> GetAllAsync()
+        {
+            var list = await _insurancePolicyDal.GetAllWithDetailsAsync();
+            return new SuccessDataResult<List<InsurancePolicyListDto>>(
+                _mapper.Map<List<InsurancePolicyListDto>>(list)
+            );
+        }
+
+        public async Task<IDataResult<InsurancePolicyListDto>> GetByIdAsync(Guid id)
+        {
+            var entity = await _insurancePolicyDal.GetByIdWithDetailsAsync(id);
+            if (entity == null)
+                return new ErrorDataResult<InsurancePolicyListDto>("Poliçe bulunamadı.");
+
+            return new SuccessDataResult<InsurancePolicyListDto>(
+                _mapper.Map<InsurancePolicyListDto>(entity)
+            );
+        }
+
+        public async Task<IDataResult<List<InsurancePolicyListDto>>> GetByVehicleIdAsync(Guid vehicleId)
+        {
+            var list = await _insurancePolicyDal.GetByVehicleIdWithDetailsAsync(vehicleId);
+            return new SuccessDataResult<List<InsurancePolicyListDto>>(
+                _mapper.Map<List<InsurancePolicyListDto>>(list)
+            );
+        }
+
         [CacheAspect]
         public async Task<IDataResult<List<InsurancePolicyListDto>>> GetExpiringAsync(int days, int take)
         {
@@ -83,28 +96,18 @@ namespace UstaTakip.Application.Services.Managers
 
             var list = await _insurancePolicyDal.GetExpiringAsync(DateTime.UtcNow, days, take);
 
-            // Map (AutoMapper kullanmıyorsan manuel doldur)
-            var dto = list.Select(p => new InsurancePolicyListDto
-            {
-                Id = p.Id,
-                CompanyName = p.CompanyName,
-                PolicyNumber = p.PolicyNumber,
-                StartDate = p.StartDate,
-                EndDate = p.EndDate,
-                CoverageAmount = p.CoverageAmount,
-                VehicleId = p.VehicleId
-            }).ToList();
-
-            return new SuccessDataResult<List<InsurancePolicyListDto>>(dto);
+            return new SuccessDataResult<List<InsurancePolicyListDto>>(
+                _mapper.Map<List<InsurancePolicyListDto>>(list)
+            );
         }
 
         [CacheAspect]
         public async Task<IDataResult<int>> GetActiveCountAsync()
         {
-            var count = await _insurancePolicyDal.GetActiveCountAsync();
-            return new SuccessDataResult<int>(count);
+            return new SuccessDataResult<int>(await _insurancePolicyDal.GetActiveCountAsync());
         }
     }
+
 
 
 }
